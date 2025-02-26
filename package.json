@@ -7,6 +7,7 @@
     "prepare": "husky",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "build": "wrangler build",
     "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
