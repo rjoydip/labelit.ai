@@ -1,0 +1,29 @@
+{
+  "name": "@labelit/types",
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts"
+    },
+    "./basic": {
+      "types": "./src/basic.d.ts"
+    },
+    "./pull-request": {
+      "types": "./src/pull-request.d.ts"
+    },
+    "./ticket": {
+      "types": "./src/ticket.d.ts"
+    }
+  },
+  "types": "./src/index.d.ts",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.3.0",
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "eslint": "^9.21.0",
+    "typescript": "^5.7.3"
+  }
+}
