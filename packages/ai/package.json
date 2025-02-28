@@ -1,0 +1,28 @@
+{
+  "name": "@labelit/ai",
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./processor": {
+      "default": "./src/processor.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@labelit/config": "workspace:*",
+    "ai": "^4.1.46",
+    "workers-ai-provider": "^0.1.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.3.0",
+    "@labelit/types": "workspace:*",
+    "eslint": "^9.21.0",
+    "typescript": "^5.7.3"
+  }
+}

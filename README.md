@@ -1,4 +1,4 @@
-# lablet.ai
+# labelit.ai
 
 [![code style](https://antfu.me/badge-code-style.svg)](https://github.com/antfu/eslint-config)
 
@@ -8,7 +8,7 @@
 
 flowchart TD
     subgraph Sources
-        BB[Bitbucket]
+        BB[Jira]
         GH[GitHub]
         GL[GitLab]
     end
