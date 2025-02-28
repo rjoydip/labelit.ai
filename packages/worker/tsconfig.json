@@ -7,7 +7,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["bun-types", "vitest/globals"],
+    "types": ["vitest/globals"],
     "strict": true,
     "skipLibCheck": true
   },
