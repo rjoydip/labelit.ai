@@ -52,19 +52,21 @@ flowchart TD
 
 ## TODO
 
-- [x] Webhook security
-  - [x] Github
-  - [x] Gitlab
-  - [x] JIRA
-- [x] Unit testing
-  - [x] AI
-  - [x] Config
-  - [x] Service
-  - [x] Types
-  - [x] Utils
-  - [x] Webhook
-  - [x] Worker
-- [x] Integrations
-  - [x] Github
-  - [x] Gitlab
-  - [x] JIRA
+- [ ] Webhook security
+  - [ ] Github
+  - [ ] Gitlab
+  - [ ] JIRA
+- [ ] Unit testing
+  - [ ] AI
+  - [ ] Config
+  - [ ] Service
+  - [ ] Types
+  - [ ] Utils
+  - [ ] Webhook
+  - [ ] Worker
+- [ ] Integrations
+  - [ ] Apps
+    - [ ] Github
+    - [ ] Gitlab
+    - [ ] JIRA
+  - [x] Knip

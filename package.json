@@ -7,13 +7,15 @@
     ],
     "scripts": {
         "prepare": "husky",
+        "knip": "knip",
         "build": "bun run --filter './packages/*' build",
-        "lint": "bun run --filter './packages/*' lint",
+        "lint": "bun run knip && bun run --filter './packages/*' lint",
         "test": "bun run --filter './packages/*' test",
         "typecheck": "bun run --filter './packages/*' typecheck",
-        "update": "bun run --filter './packages/*' update --ignore-scripts --no-progress --no-summary"
+        "update": "bun run --filter './packages/*' _update --ignore-scripts --no-progress --no-summary"
     },
     "devDependencies": {
-        "husky": "^9.1.7"
+        "husky": "^9.1.7",
+        "knip": "^5.46.0"
     }
 }
