@@ -13,8 +13,3 @@ export interface TicketData {
     [key: string]: any
   }
 }
-
-export interface ProcessedTicket extends TicketData {
-  predictedLabel: 'Bug' | 'Story' | 'Task' | 'Spike'
-  processingTime: number
-}

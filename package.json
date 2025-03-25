@@ -1,6 +1,6 @@
 {
     "name": "labelit.ai",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "workspaces": [
         "packages/*",
         "integrations/*"
@@ -10,12 +10,10 @@
         "build": "bun run --filter './packages/*' build",
         "lint": "bun run --filter './packages/*' lint",
         "test": "bun run --filter './packages/*' test",
-        "typecheck": "bun run --filter './packages/*' typecheck"
+        "typecheck": "bun run --filter './packages/*' typecheck",
+        "update": "bun run --filter './packages/*' update --ignore-scripts --no-progress --no-summary"
     },
     "devDependencies": {
         "husky": "^9.1.7"
-    },
-    "peerDependencies": {
-        "typescript": "^5.7.3"
     }
 }

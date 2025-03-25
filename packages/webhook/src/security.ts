@@ -1,11 +1,18 @@
+import type { Env } from '@labelit/types'
 import type { HonoRequest } from 'hono'
-import { crypto } from '@labelit/shared'
+import { Config } from '@labelit/config'
 
-export class WebhookSecurityService {
+export class WebhookSecurity {
   private secrets: Map<string, string>
 
-  constructor(secrets: Record<string, string>) {
-    this.secrets = new Map(Object.entries(secrets))
+  constructor(env: Env) {
+    const config = new Config(env)
+    const secrets = config.getSectets()
+    this.secrets = new Map(Object.entries({
+      github: secrets.GITHUB_WEBHOOK,
+      gitlab: secrets.GITLAB_WEBHOOK,
+      jira: secrets.JIRA_WEBHOOK,
+    }))
   }
 
   async validateGithubWebhook(request: HonoRequest): Promise<boolean> {
@@ -26,7 +33,7 @@ export class WebhookSecurityService {
   }
 
   async validateJiraWebhook(request: HonoRequest): Promise<boolean> {
-    const token = request.header('X-Hub-Signature')
+    const token = request.header('X-JIRA-Signature')
     const body = await request.text()
     const secret = this.secrets.get('jira')
 
@@ -60,10 +67,12 @@ export class WebhookSecurityService {
   private timingSafeEqual(a: string, b: string): boolean {
     if (a.length !== b.length)
       return false
+
     let result = 0
     for (let i = 0; i < a.length; i++) {
       result |= a.charCodeAt(i) ^ b.charCodeAt(i)
     }
+
     return result === 0
   }
 }
