@@ -1,4 +1,5 @@
 export * from './basic'
+export * from './env'
 export * from './pull-request'
 export * from './ticket'
-export { KVNamespace } from '@cloudflare/workers-types'
+export { Ai, KVNamespace } from '@cloudflare/workers-types'

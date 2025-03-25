@@ -8,6 +8,9 @@
     "./basic": {
       "types": "./src/basic.d.ts"
     },
+    "./env": {
+      "types": "./src/env.d.ts"
+    },
     "./pull-request": {
       "types": "./src/pull-request.d.ts"
     },
@@ -18,12 +21,13 @@
   "types": "./src/index.d.ts",
   "scripts": {
     "lint": "eslint . --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "update": "bun update"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.3.0",
-    "@cloudflare/workers-types": "^4.20250224.0",
-    "eslint": "^9.21.0",
-    "typescript": "^5.7.3"
+    "@antfu/eslint-config": "^4.11.0",
+    "@cloudflare/workers-types": "^4.20250321.0",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2"
   }
 }

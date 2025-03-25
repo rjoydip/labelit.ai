@@ -1,0 +1,6 @@
+CACHE_TTL = '3700'
+CACHE_NAMESPACE = "labelit-ai"
+MODEL_NAME = "@cf/meta/llama-3.1-8b-instruct"
+GITHUB_WEBHOOK_SECRET="labelit-ai"
+GITLAB_WEBHOOK_SECRET="labelit-ai"
+JIRA_WEBHOOK_SECRET="labelit-ai"

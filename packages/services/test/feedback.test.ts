@@ -1,5 +1,6 @@
 import type { FeedbackData } from '@labelit/types'
-import { FeedbackService } from '@/services/feedback'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { FeedbackService } from '../src/feedback'
 
 describe('feedbackService', () => {
   let feedbackService: FeedbackService

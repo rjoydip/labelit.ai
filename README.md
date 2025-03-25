@@ -49,3 +49,22 @@ flowchart TD
     LAB --> API
     ML --> AI
 ```
+
+## TODO
+
+- [x] Webhook security
+  - [x] Github
+  - [x] Gitlab
+  - [x] JIRA
+- [x] Unit testing
+  - [x] AI
+  - [x] Config
+  - [x] Service
+  - [x] Types
+  - [x] Utils
+  - [x] Webhook
+  - [x] Worker
+- [x] Integrations
+  - [x] Github
+  - [x] Gitlab
+  - [x] JIRA

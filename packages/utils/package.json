@@ -1,15 +1,9 @@
 {
-  "name": "@labelit/ai",
+  "name": "@labelit/utils",
   "version": "0.0.0",
   "exports": {
     ".": {
       "default": "./src/index.ts"
-    },
-    "./processor": {
-      "default": "./src/processor.ts"
-    },
-    "./prompts": {
-      "default": "./src/prompts.ts"
     }
   },
   "main": "./src/index.ts",
@@ -19,13 +13,11 @@
     "update": "bun update"
   },
   "dependencies": {
-    "@labelit/config": "workspace:*",
-    "ai": "^4.2.2",
-    "workers-ai-provider": "^0.1.3"
+    "@cloudflare/workers-types": "^4.20250321.0",
+    "std-env": "^3.8.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0",
-    "@labelit/types": "workspace:*",
     "eslint": "^9.23.0",
     "typescript": "^5.8.2"
   }

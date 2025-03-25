@@ -1,11 +1,6 @@
 name = "labelit-ai"
 main = "src/index.ts"
-compatibility_date = "2022-04-05"
-
-[vars]
-CACHE_TTL = "3600"
-CACHE_NAMESPACE = "labelit-ai"
-MODEL_NAME = "@cf/meta/llama-3.1-8b-instruct"
+compatibility_date = "2024-09-23"
 
 [ai]
 binding = "AI"
