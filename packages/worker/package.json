@@ -9,16 +9,13 @@
     "build": "wrangler build",
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "update": "bun update"
+    "_update": "bun update"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@labelit/ai": "workspace:*",
     "@labelit/config": "workspace:*",
-    "@labelit/utils": "workspace:*",
-    "@labelit/webhook": "workspace:*",
     "hono": "^4.7.5"
   },
   "devDependencies": {

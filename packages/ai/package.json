@@ -16,10 +16,9 @@
   "scripts": {
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "update": "bun update"
+    "_update": "bun update"
   },
   "dependencies": {
-    "@labelit/config": "workspace:*",
     "ai": "^4.2.2",
     "workers-ai-provider": "^0.1.3"
   },

@@ -10,11 +10,7 @@
   "scripts": {
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "update": "bun update"
-  },
-  "dependencies": {
-    "@cloudflare/workers-types": "^4.20250321.0",
-    "std-env": "^3.8.1"
+    "_update": "bun update"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0",
