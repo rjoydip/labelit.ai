@@ -7,7 +7,7 @@
         "integrations/*"
     ],
     "scripts": {
-        "prepare": "husky",
+        "prepare": "simple-git-hooks",
         "dev": "turbo run dev",
         "build": "turbo run build",
         "lint": "turbo run lint",
