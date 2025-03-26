@@ -10,13 +10,12 @@
   "scripts": {
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "update": "bun update"
+    "_update": "bun update"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0",
     "@labelit/types": "workspace:*",
     "eslint": "^9.23.0",
-    "hono": "^4.7.5",
     "typescript": "^5.8.2"
   }
 }

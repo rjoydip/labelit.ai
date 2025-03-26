@@ -16,7 +16,16 @@
         "update": "turbo run update -- --ignore-scripts --no-progress --no-summary"
     },
     "devDependencies": {
-        "husky": "^9.1.7",
+        "knip": "^5.46.2",
+        "lint-staged": "^15.5.0",
+        "simple-git-hooks": "^2.12.1",
         "turbo": "^2.4.4"
+    },
+    "simple-git-hooks": {
+        "pre-commit": "bun i --ignore-scripts --offline && bunx lint-staged && bun run typecheck",
+        "pre-push": "bun run build && bun run test"
+    },
+    "lint-staged": {
+        "*": "bun run lint"
     }
 }

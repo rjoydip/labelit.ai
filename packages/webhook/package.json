@@ -16,15 +16,12 @@
   "scripts": {
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "update": "bun update"
+    "_update": "bun update"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20250321.0",
-    "@labelit/ai": "workspace:*",
     "@labelit/config": "workspace:*",
     "@labelit/services": "workspace:*",
-    "@labelit/utils": "workspace:*",
-    "crypto": "^1.0.1"
+    "@labelit/utils": "workspace:*"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0",

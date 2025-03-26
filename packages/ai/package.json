@@ -16,7 +16,7 @@
   "scripts": {
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "update": "bun update"
+    "_update": "bun update"
   },
   "dependencies": {
     "@labelit/config": "workspace:*",
