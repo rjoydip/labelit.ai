@@ -70,3 +70,4 @@ flowchart TD
     - [ ] Gitlab
     - [ ] JIRA
   - [x] Knip
+  - [x] Turborepo
