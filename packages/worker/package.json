@@ -9,7 +9,7 @@
     "build": "wrangler build",
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "_update": "bun update"
+    "update": "bun update"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
@@ -23,6 +23,6 @@
     "@labelit/types": "workspace:*",
     "eslint": "^9.23.0",
     "typescript": "^5.8.2",
-    "wrangler": "^3.114.2"
+    "wrangler": "^3.114.3"
   }
 }

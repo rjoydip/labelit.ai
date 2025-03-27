@@ -20,7 +20,7 @@
     "lint": "eslint . --fix",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "_update": "bun update"
+    "update": "bun update"
   },
   "dependencies": {
     "@labelit/ai": "workspace:*"
