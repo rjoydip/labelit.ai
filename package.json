@@ -9,6 +9,7 @@
     "scripts": {
         "prepare": "simple-git-hooks",
         "dev": "turbo run dev",
+        "knip": "knip",
         "build": "turbo run build",
         "lint": "turbo run lint",
         "test": "turbo run test",
@@ -21,7 +22,7 @@
         "turbo": "^2.4.4"
     },
     "simple-git-hooks": {
-        "pre-commit": "bun i --ignore-scripts --offline && bun lint && bun run typecheck",
+        "pre-commit": "bun install --ignore-scripts --offline && bun run knip && bun lint && bun run typecheck",
         "pre-push": "bun run build && bun run test"
     }
 }

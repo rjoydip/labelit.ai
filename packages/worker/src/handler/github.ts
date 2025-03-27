@@ -4,23 +4,17 @@ import type { TicketData } from '@labelit/types/ticket'
 import type { HonoRequest } from 'hono/request'
 import { PRProcessor, TicketProcessor } from '@labelit/services'
 import { createErrorResponse, createSuccessResponse } from '@labelit/utils'
-import { WebhookSecurity } from '../security'
 
-export class GithubWebhookHandler {
+export class GithubHandler {
   private prProcessor: PRProcessor
   private ticketProcessor: TicketProcessor
-  private webhookSecurity: WebhookSecurity
 
   constructor(env: Env) {
-    this.webhookSecurity = new WebhookSecurity(env)
     this.prProcessor = new PRProcessor(env)
     this.ticketProcessor = new TicketProcessor(env)
   }
 
   public async handlePR(request: HonoRequest): Promise<Response> {
-    if (!await this.webhookSecurity.validateGithubWebhook(request)) {
-      return createErrorResponse('Unauthorized', 401)
-    }
     try {
       const json = await request.json()
       const prDetails = this.preparePRPayload(json)
@@ -35,14 +29,11 @@ export class GithubWebhookHandler {
   }
 
   public async handleIssues(request: HonoRequest, payload: any): Promise<Response> {
-    /* if (!await this.webhookSecurity.validateGithubWebhook(request)) {
-      return createErrorResponse('Unauthorized', 401)
-    } */
     try {
       const ticket = this.prepareIssuePayload(payload)
       const promptDetails = this.ticketProcessor.preparePrompt(ticket)
-      const rawResponse = await this.ticketProcessor.classify<TicketData>(ticket, promptDetails)
-      const response = this.ticketProcessor.parseResponse(rawResponse)
+      const classifiedResponse = await this.ticketProcessor.classify<TicketData>(ticket, promptDetails)
+      const response = this.ticketProcessor.parseResponse(classifiedResponse)
       return createSuccessResponse(response)
     }
     catch (error) {

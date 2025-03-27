@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@labelit/config": "workspace:*",
+    "@labelit/services": "workspace:*",
+    "@labelit/utils": "workspace:*",
     "hono": "^4.7.5"
   },
   "devDependencies": {

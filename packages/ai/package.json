@@ -19,7 +19,6 @@
     "update": "bun update"
   },
   "dependencies": {
-    "@labelit/config": "workspace:*",
     "ai": "^4.2.6",
     "workers-ai-provider": "^0.1.3"
   },

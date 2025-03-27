@@ -1,18 +1,13 @@
-import type { Env } from '@labelit/types'
-import type { HandlerSource, HandlerType } from '@labelit/types/basic'
-import type { HonoRequest } from 'hono'
+import type { Env, HandlerSource, HandlerType } from '@labelit/types'
+import type { HonoRequest } from 'hono/request'
 import { createSuccessResponse } from '@labelit/utils'
-import { GithubWebhookHandler } from './github'
+import { GithubHandler } from './github'
 
-export abstract class HookHandler<T> {
-  protected abstract preparePayload(data: any): T
-}
-
-export class WebhookHandler {
-  private githubWebhookHandler: GithubWebhookHandler
+export class Handler {
+  private githubHandler: GithubHandler
 
   constructor(env: Env) {
-    this.githubWebhookHandler = new GithubWebhookHandler(env)
+    this.githubHandler = new GithubHandler(env)
   }
 
   public async handler(source: HandlerSource, request: HonoRequest): Promise<Response> {
@@ -22,7 +17,7 @@ export class WebhookHandler {
     const case$ = `${source.trim().toLowerCase()}-${type}`
     switch (case$) {
       case 'github-issue':
-        response = await this.githubWebhookHandler.handleIssues(request, payload.issue)
+        response = await this.githubHandler.handleIssues(request, payload.issue)
         break
       case 'gitlab-issue':
       case 'gitlab-pr':
