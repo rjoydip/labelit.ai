@@ -22,7 +22,7 @@
   "scripts": {
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "_update": "bun update"
+    "update": "bun update"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0",

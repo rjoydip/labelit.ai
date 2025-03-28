@@ -5,7 +5,7 @@ import { Hono } from 'hono'
 import { cache } from 'hono/cache'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
-import { WebhookHandler } from '../../webhook/src/handlers'
+import { Handler } from './handler'
 
 const config = new Config()
 const app = new Hono<{ Bindings: Env }>()
@@ -24,8 +24,8 @@ app.post('/webhook/:source', async (c, next) => {
   await next()
 }, async (c) => {
   const source = c.req.param('source') as HandlerSource
-  const webhookHandler = new WebhookHandler(c.env)
-  return await webhookHandler.handler(source, c.req)
+  const handler = new Handler(c.env)
+  return await handler.handler(source, c.req)
 })
 
 export default app
