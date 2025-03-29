@@ -1,5 +1,10 @@
 export * from './basic'
 export * from './env'
-export * from './pull-request'
-export * from './ticket'
-export { Ai, KVNamespace } from '@cloudflare/workers-types'
+
+export interface PRData {
+  additions: number
+  changed_files: number
+  deletions: number
+  diff_content: string
+  reviewers: string[]
+}

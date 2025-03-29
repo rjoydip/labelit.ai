@@ -1,6 +1,7 @@
-import type { Bindings } from './basic'
-
-export interface Env extends Bindings {
+export { Ai, KVNamespace } from '@cloudflare/workers-types'
+export interface Env {
+  KV: KVNamespace<string>
+  AI: Ai
   CACHE_TTL: string
   CACHE_NAMESPACE: string
   MODEL_NAME: string

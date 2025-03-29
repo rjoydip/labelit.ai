@@ -1,5 +1,5 @@
 import type { Env } from '@labelit/types'
-import type { ClassificationType, PromptResponse } from '@labelit/types/basic'
+import type { ClassificationType, Prompt } from '@labelit/types/basic'
 import type { LanguageModelV1 } from 'ai'
 import { generateText } from 'ai'
 import { createWorkersAI } from 'workers-ai-provider'
@@ -14,7 +14,7 @@ export abstract class AIProcessor<T> {
     })
   }
 
-  public async classify<TContent>(content: TContent, prompt: PromptResponse): Promise<ClassificationType> {
+  public async classify<TContent>(prompt: Prompt, content: TContent): Promise<ClassificationType> {
     const startTime = Date.now()
 
     const { text } = await generateText({
@@ -39,6 +39,6 @@ export abstract class AIProcessor<T> {
     return result
   }
 
-  public abstract preparePrompt<P>(payload: P): PromptResponse
+  public abstract getPrompt(puserPrompt: string): Prompt
   public abstract parseResponse(result: ClassificationType): T
 }

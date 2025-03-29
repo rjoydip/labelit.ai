@@ -5,6 +5,11 @@ compatibility_date = "2024-09-23"
 [ai]
 binding = "AI"
 
+[vars]
+CACHE_TTL = '3700'
+CACHE_NAMESPACE = "labelit-ai"
+MODEL_NAME = "@cf/meta/llama-3.1-8b-instruct"
+
 [[kv_namespaces]]
 binding = "KV"
 id = "bf906e569452444faa2bca65bc582a8c"
