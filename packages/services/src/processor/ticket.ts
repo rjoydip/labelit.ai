@@ -3,10 +3,10 @@ import { AIProcessor } from '@labelit/ai/processor'
 import { issuePrompt } from '@labelit/ai/prompts'
 
 export class TicketProcessor extends AIProcessor<ParseResponse> {
-  public preparePrompt<TicketData>(_: TicketData) {
+  public getPrompt(userPrompt: string) {
     return {
-      system: issuePrompt,
-      user: '',
+      system: issuePrompt ?? '',
+      user: userPrompt ?? '',
     }
   }
 
