@@ -76,7 +76,6 @@
         "@labelit/services": "workspace:*",
         "@labelit/utils": "workspace:*",
         "hono": "^4.7.5",
-        "workers-ai-provider": "^0.2.1",
       },
       "devDependencies": {
         "@antfu/eslint-config": "^4.11.0",
