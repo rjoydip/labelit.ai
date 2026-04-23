@@ -4,7 +4,7 @@ import type { Env, ParseResponse } from "@labelit/types";
 import type { ClassificationType } from "@labelit/types/basic";
 import { TicketAnalyzer } from "@labelit/services/ticket-analyzer";
 
-function parseResponse(result:any): ParseResponse {
+function parseResponse(result: any): ParseResponse {
   // First check structured fields (more reliable)
   let predictedLabel = "Task";
 
@@ -16,9 +16,15 @@ function parseResponse(result:any): ParseResponse {
   } else if (typeof result.category === "string") {
     // Check category field (e.g., "bug")
     switch (result.category.toLowerCase()) {
-      case "bug": predictedLabel = "Bug"; break;
-      case "story": predictedLabel = "Story"; break;
-      case "spike": predictedLabel = "Spike"; break;
+      case "bug":
+        predictedLabel = "Bug";
+        break;
+      case "story":
+        predictedLabel = "Story";
+        break;
+      case "spike":
+        predictedLabel = "Spike";
+        break;
     }
   } else {
     // Fallback to text analysis (less reliable but still useful)
@@ -43,18 +49,17 @@ vi.mock("@labelit/ai/processor", () => {
         classify: vi.fn().mockImplementation(async () => {
           return {
             text: "Mock classification result",
-            processingTime: 100
+            processingTime: 100,
           };
         }),
-        parseResponse: vi.fn().mockImplementation(result => {
+        parseResponse: vi.fn().mockImplementation((result) => {
           return parseResponse(result);
-        })
+        }),
       };
     }),
-    __esModule: true
+    __esModule: true,
   };
 });
-
 
 describe("TicketAnalyzer", () => {
   let ticketAnalyzer: TicketAnalyzer;
