@@ -1,6 +1,7 @@
 {
   "name": "@labelit/ai",
   "version": "0.0.0",
+  "main": "./src/index.ts",
   "exports": {
     ".": {
       "default": "./src/index.ts"
@@ -12,9 +13,11 @@
       "default": "./src/prompts.ts"
     }
   },
-  "main": "./src/index.ts",
   "scripts": {
-    "lint": "eslint . --fix",
+    "lint": "oxlint . --fix",
+    "format": "oxfmt . --write",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "update": "bun update"
   },
@@ -23,9 +26,9 @@
     "workers-ai-provider": "^0.2.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.11.0",
     "@labelit/types": "workspace:*",
-    "eslint": "^9.23.0",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0",
     "typescript": "^5.8.2"
   }
 }

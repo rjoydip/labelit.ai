@@ -6,17 +6,14 @@ export function createErrorResponse(error: unknown, status: number = 500): Respo
     }),
     {
       status,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     },
-  )
+  );
 }
 
 export function createSuccessResponse(data: unknown, status: number = 200): Response {
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
-      headers: { 'Content-Type': 'application/json' },
-    },
-  )
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
