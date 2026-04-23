@@ -3,7 +3,7 @@ import type { ClassificationType, ParseResponse, PredictedLabel } from "@labelit
 import { AIProcessor } from "@labelit/ai/processor";
 import { prPrompt } from "@labelit/ai/prompts";
 
-export class PRProcessor extends AIProcessor<ParseResponse> {
+export class PRAnalyzer extends AIProcessor<ParseResponse> {
   public getPrompt() {
     return {
       system: prPrompt,

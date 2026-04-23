@@ -1,15 +1,15 @@
 import type { Env, PayloadMeta } from "@labelit/types";
 import type { HonoRequest } from "hono/request";
-import { PRProcessor, TicketProcessor } from "@labelit/services";
+import { PRAnalyzer, TicketAnalyzer } from "@labelit/services";
 import { createErrorResponse, createSuccessResponse } from "@labelit/utils";
 
 export class Handler {
-  private prProcessor: PRProcessor;
-  private ticketProcessor: TicketProcessor;
+  private prAnalyzer: PRAnalyzer;
+  private ticketAnalyzer: TicketAnalyzer;
 
   constructor(env: Env) {
-    this.prProcessor = new PRProcessor(env);
-    this.ticketProcessor = new TicketProcessor(env);
+    this.prAnalyzer = new PRAnalyzer(env);
+    this.ticketAnalyzer = new TicketAnalyzer(env);
   }
 
   private preparePayload(payload: any): PayloadMeta {
@@ -79,8 +79,8 @@ export class Handler {
         diff_content,
         reviewers: [],
       };
-      const complexityScore = this.prProcessor.calculateComplexity(calculateDetails);
-      const riskScore = this.prProcessor.calculateRiskScore(calculateDetails);
+      const complexityScore = this.prAnalyzer.calculateComplexity(calculateDetails);
+      const riskScore = this.prAnalyzer.calculateRiskScore(calculateDetails);
       return {
         source: "github",
         type: "pull_request",
@@ -100,7 +100,7 @@ export class Handler {
         userPrompt: `
           Title: ${title}
           Description: ${body}
-          
+
           PR Analysis:
           - Changed Files: ${changed_files}
           - Additions: ${additions}
@@ -136,7 +136,7 @@ export class Handler {
         userPrompt: `
           Title: ${title}
           Description: ${description ?? ""}
-          
+
           PR Analysis:
           - Changed Files: 1
           - Additions: 1
@@ -187,12 +187,12 @@ export class Handler {
     try {
       const reqPayload = await req.json();
       const { payload, userPrompt }: PayloadMeta = this.preparePayload(reqPayload);
-      const promptDetails = this.ticketProcessor.getPrompt(userPrompt);
-      const classifiedResponse = await this.ticketProcessor.classify<PayloadMeta["payload"]>(
+      const promptDetails = this.ticketAnalyzer.getPrompt(userPrompt);
+      const classifiedResponse = await this.ticketAnalyzer.classify<PayloadMeta["payload"]>(
         promptDetails,
         payload,
       );
-      const response = this.ticketProcessor.parseResponse(classifiedResponse);
+      const response = this.ticketAnalyzer.parseResponse(classifiedResponse);
       return createSuccessResponse(response);
     } catch (error) {
       return createErrorResponse(error);

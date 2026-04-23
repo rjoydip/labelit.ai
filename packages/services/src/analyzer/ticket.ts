@@ -2,7 +2,7 @@ import type { ClassificationType, ParseResponse, PredictedLabel } from "@labelit
 import { AIProcessor } from "@labelit/ai/processor";
 import { issuePrompt } from "@labelit/ai/prompts";
 
-export class TicketProcessor extends AIProcessor<ParseResponse> {
+export class TicketAnalyzer extends AIProcessor<ParseResponse> {
   public getPrompt(userPrompt: string) {
     return {
       system: issuePrompt ?? "",
