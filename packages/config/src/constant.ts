@@ -1,1 +1,1 @@
-export const defaultSecretValue = 'labelit-ai'
+export const defaultSecretValue = "labelit-ai";

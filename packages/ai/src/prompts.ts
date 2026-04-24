@@ -51,7 +51,7 @@ export const issuePrompt = `
       - Analyze title and description comprehensively
       - Consider implied complexity and effort
       - Assess potential system-wide implications
-`
+`;
 export const prPrompt = `
     You are an advanced AI pull request classifier. Your task is to provide a comprehensive analysis of pull requests.
 
@@ -80,4 +80,4 @@ export const prPrompt = `
       - Consider code quality and maintainability
       - Evaluate potential regression risks
       - Analyze test coverage and impact
-`
+`;
