@@ -44,7 +44,7 @@ function parseResponse(result: any): ParseResponse {
 // Mock the AI module entirely
 vi.mock("@labelit/ai/processor", () => {
   return {
-    AIProcessor: vi.fn().mockImplementation(() => {
+    AIProcessor: vi.fn().mockImplementation(function () {
       return {
         classify: vi.fn().mockImplementation(async () => {
           return {
