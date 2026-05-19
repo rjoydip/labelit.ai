@@ -5,7 +5,8 @@ export default defineConfig({
     globals: true,
     environment: "node",
     root: ".",
-    include: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    include: ["tests/**/*.test.ts"],
+    exclude: ["packages/**", "node_modules/**", "dist/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
