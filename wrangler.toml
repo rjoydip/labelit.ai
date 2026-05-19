@@ -1,0 +1,27 @@
+name = "labelit-ai"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[ai]
+binding = "AI"
+
+[vars]
+CACHE_TTL = "3700"
+CACHE_NAMESPACE = "labelit-ai"
+PI_PROVIDER = "openai"
+PI_MODEL_NAME = "gpt-4o-mini"
+
+# Secrets (set via `wrangler secret put <name>`):
+# WEBHOOK_SECRET         - GitHub webhook secret for signature verification
+# PI_API_KEY             - API key for LLM provider
+# GITHUB_TOKEN           - GitHub personal access token (for Actions provider)
+# GITHUB_APP_PRIVATE_KEY - GitHub App private key (for App provider)
+
+[[kv_namespaces]]
+binding = "KV"
+id = "bf906e569452444faa2bca65bc582a8c"
+preview_id = "bf906e569452444faa2bca65bc582a8c"
+
+[build]
+command = ""

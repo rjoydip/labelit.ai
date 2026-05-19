@@ -1,0 +1,11 @@
+# https://knip.dev/reference/configuration
+
+ignoreDependencies:
+  - bun-types
+
+ignoreUnresolved:
+  - bun-types
+
+# Ignore types from tsconfig - they are not actual imports
+ignoreTypes:
+  - bun

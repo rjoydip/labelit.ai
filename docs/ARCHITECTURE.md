@@ -2,109 +2,130 @@
 
 This document provides a detailed overview of the labelit.ai architecture.
 
-## System Components
+## System Architecture
 
-### 1. Webhook Service (packages/worker)
+labelit.ai follows a monolithic architecture with clearly separated layers:
 
-- Receives incoming webhooks from GitHub, GitLab, and Jira
-- Verifies webhook signatures for security
-- Places validated events onto a queue for processing
-- Built with Hono framework on Cloudflare Workers
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         External Inputs                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │
+│  │ GitHub       │  │ GitHub CLI   │  │ GitHub App   │             │
+│  │ Actions      │  │              │  │              │             │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘             │
+└─────────┼─────────────────┼─────────────────┼──────────────────────┘
+          │                 │                 │
+          ▼                 ▼                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Providers Layer                                │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  src/providers/github/                                        │  │
+│  │  - actions.ts (GitHub Actions provider)                     │  │
+│  │  - cli.ts (GitHub CLI provider)                              │  │
+│  │  - app.ts (GitHub App provider)                             │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Webhook Service                                │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
+│  │ Validation  │  │ Queue       │  │ Rate Limit  │                │
+│  │ - HMAC      │  │ - Retry     │  │ - Per IP    │                │
+│  │ - Token     │  │ - DLQ       │  │ - Config    │                │
+│  └─────────────┘  └─────────────┘  └─────────────┘                │
+└─────────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  @earendil-works/pi-ai     - Unified LLM API (OpenAI, Anthropic, Google)  │  │
+│  @earendil-works/pi-agent-core - Agent runtime with tool calling         │  │
+└─────────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Core Services                                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │ Analyzer │  │ Feedback │  │ AI Proc  │  │ Utils    │           │
+│  │ - PR     │  │ Service  │  │          │  │          │           │
+│  │ - Ticket │  │          │  │          │  │          │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-### 2. Queue System
+## Directory Structure
 
-- Internal queue mechanism for decoupling webhook reception from processing
-- Provides buffering during traffic spikes
-- Ensures reliable event delivery
-
-### 3. Cache Layer
-
-- Redis-compatible cache for storing frequently accessed data
-- Reduces load on external APIs and databases
-- Stores user preferences, repository metadata, and rate limit information
-
-### 4. AI Processing Service (packages/ai)
-
-- Processes issue/PR descriptions and metadata
-- Uses Cloudflare Workers AI for text understanding
-- Generates relevant labels based on content analysis
-- Applies confidence scoring to label suggestions
-
-### 5. Aggregator Service (packages/services)
-
-- Combines multiple signals (AI suggestions, repository patterns, user history)
-- Resolves conflicts between different labeling approaches
-- Applies business rules and constraints
-- Outputs final label recommendations
-
-### 6. Labeling Service
-
-- Applies labels to issues and pull requests
-- Respects repository-specific label configurations
-- Handles rate limiting and error conditions
-- Provides feedback on labeling operations
-
-### 7. Storage Layer
-
-- Primary database for persistent storage of events, labels, and metadata
-- Model training data repository for improving AI accuracy
-- Backup and archival systems
-
-### 8. API Service
-
-- RESTful interface for external integrations
-- Dashboard data provision
-- Administrative functions
-- Webhook management interface
+```
+src/
+├── harness/           # PI tools integration
+│   ├── index.ts       # Harness entry point (Agent, streamSimple)
+│   └── createAddLabelsTool.ts  # Labeling tool definitions
+│
+├── providers/        # GitHub provider implementations
+│   └── github/
+│       ├── index.ts   # Provider exports
+│       ├── types.ts   # Type definitions
+│       ├── factory.ts # Provider factory
+│       ├── actions.ts # GitHub Actions
+│       ├── cli.ts     # GitHub CLI
+│       └── app.ts     # GitHub App
+│
+├── webhook/         # Webhook handling
+│   ├── index.ts     # Module exports
+│   ├── handler.ts   # Main webhook handler
+│   ├── validation.ts # Signature verification
+│   ├── queue.ts     # Queue with retry logic
+│   └── rate-limit.ts # Rate limiting
+│
+├── services/        # Core business logic
+│   ├── index.ts     # Module exports
+│   ├── feedback.ts  # Feedback service
+│   └── analyzer/
+│       ├── pull-request.ts
+│       └── ticket.ts
+│
+├── ai/             # AI processing
+│   ├── processor.ts
+│   └── prompts.ts
+│
+├── types/          # TypeScript types
+│   ├── index.ts
+│   ├── basic.ts
+│   └── env.ts
+│
+├── utils/          # Utility functions
+│   └── index.ts
+│
+└── config/         # Configuration
+    └── index.ts
+```
 
 ## Data Flow
 
-1. External system (GitHub/GitLab/Jira) sends webhook event
-2. Cloudflare Worker receives and validates webhook
-3. Validated event placed in queue
-4. Worker processes event from queue
-5. Event data sent to AI Processing Service
-6. AI service analyzes content and suggests labels
-7. Aggregator service combines signals and applies business rules
-8. Labeling service applies final labels to issue/PR
-9. Results stored in database for analytics and model improvement
-10. Feedback loop improves future AI predictions
+1. **GitHub** sends webhook event
+2. **Webhook handler** receives and validates the request
+3. **Validation** checks HMAC signature/rate limits
+4. **Queue** processes with retry logic if needed
+5. **Harness** orchestrates AI processing
+6. **Agent Core** manages tool execution and state
+7. **PI tools** handles LLM calls (OpenAI/Anthropic/Google)
+8. **Services** perform business logic (analysis, feedback)
+9. **Results** stored in database for analytics
 
 ## Security Considerations
 
-- Webhook signature verification prevents spoofing
-- Rate limiting protects against abuse
+- Webhook signature verification (HMAC for GitHub)
+- Rate limiting per client IP
+- Exponential backoff retry with dead letter queue
+- Provider authentication via tokens/JWT
 - Input validation prevents injection attacks
-- Secure headers and CSP mitigate client-side attacks
-- Principle of least privilege for service accounts
-- Regular security audits and dependency updates
 
 ## Scalability Features
 
-- Horizontal scaling via Cloudflare Workers global distribution
-- Queue buffering handles traffic spikes
-- Caching reduces redundant computation
-- Database connection pooling
-- CDN caching for static assets
-- Lazy loading of non-critical features
-
-## Monitoring and Observability
-
-- Structured logging with correlation IDs
-- Metrics collection (latency, error rates, throughput)
-- Distributed tracing for cross-service requests
-- Health check endpoints for all services
-- Alerting on anomaly detection
-- Performance dashboards
-
-## Failure Handling
-
-- Retry mechanisms with exponential backoff
-- Circuit breaker pattern for external dependencies
-- Dead letter queues for repeatedly failing items
-- Graceful degradation when non-critical services fail
-- Backup and disaster recovery procedures
-- Chaos engineering for resilience testing
+- Horizontal scaling via Cloudflare Workers
+- Queue buffering for traffic spikes
+- Rate limiting prevents abuse
+- Efficient resource usage for LLM calls
 
 ## Technology Choices
 
@@ -116,37 +137,32 @@ This document provides a detailed overview of the labelit.ai architecture.
 - Built-in KV storage and R2 object storage
 - Workers AI for accessible machine learning
 
-### Turborepo + Bun
+### Bun
 
-- Fast monorepo management
-- Efficient package installation and linking
-- Parallel task execution
-- Consistent development experience
-
-### TypeScript
-
-- Static type safety reduces runtime errors
-- Excellent IDE support and refactoring tools
-- Self-documenting codebases
-- Gradual adoption from JavaScript
+- Fast package installation
+- Built-in test runner
+- Optimized for TypeScript
 
 ### Hono Framework
 
 - Minimal bundle size for fast cold starts
-- Middleware architecture for cross-cutting concerns
-- Built-in content type handling
+- Middleware architecture
 - Excellent TypeScript integration
+
+### AI Harness
+
+- Unified multi-provider LLM API
+- Agent runtime with tool calling
+- State management for multi-turn conversations
 
 ### Vitest
 
 - Fast test execution
 - Built-in coverage reporting
 - Excellent ESM support
-- Compatible with testing-library patterns
 
 ### oxlint + oxfmt
 
 - Blazing fast linting and formatting
 - Zero-configuration defaults
 - Modern JavaScript/TypeScript support
-- Consistent code style enforcement
