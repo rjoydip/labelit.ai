@@ -8,10 +8,10 @@ Providers handle authentication and API communication with GitHub. They expose a
 
 ## Supported Providers
 
-| Provider | Description | Authentication |
-|----------|-------------|-----------------|
-| **GitHub Actions** | For workflow-based automation | `GITHUB_TOKEN` |
-| **GitHub App** | For multi-repository access | JWT + Installation token |
+| Provider           | Description                   | Authentication           |
+| ------------------ | ----------------------------- | ------------------------ |
+| **GitHub Actions** | For workflow-based automation | `GITHUB_TOKEN`           |
+| **GitHub App**     | For multi-repository access   | JWT + Installation token |
 
 ## Provider Interface
 
@@ -46,9 +46,9 @@ Uses a personal access token for authentication. Suitable for workflows running 
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GITHUB_TOKEN` | Yes | GitHub personal access token |
+| Variable       | Required | Description                  |
+| -------------- | -------- | ---------------------------- |
+| `GITHUB_TOKEN` | Yes      | GitHub personal access token |
 
 ### Usage
 
@@ -76,11 +76,11 @@ Uses JWT authentication for app-level access. Suitable for multi-repository auto
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GITHUB_APP_ID` | Yes | GitHub App ID |
-| `GITHUB_APP_PRIVATE_KEY` | Yes | App private key (PEM) |
-| `GITHUB_APP_INSTALLATION_ID` | Yes | Installation ID |
+| Variable                     | Required | Description           |
+| ---------------------------- | -------- | --------------------- |
+| `GITHUB_APP_ID`              | Yes      | GitHub App ID         |
+| `GITHUB_APP_PRIVATE_KEY`     | Yes      | App private key (PEM) |
+| `GITHUB_APP_INSTALLATION_ID` | Yes      | Installation ID       |
 
 ### JWT Signing
 

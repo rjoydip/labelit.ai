@@ -60,10 +60,12 @@ const agent = new AgentCore({
 ```
 
 **Parameters:**
+
 - `target` (string): Issue/PR identifier in format `owner/repo#number`
 - `labels` (string[]): Labels to add
 
 **Returns:**
+
 ```typescript
 {
   content: [{ type: "text", text: '{"success": true, "target": "...", "labels": [...] }],
@@ -84,6 +86,7 @@ const removeTool = createRemoveLabelsTool(async (target, labels) => {
 ```
 
 **Parameters:**
+
 - `target` (string): Issue/PR identifier
 - `labels` (string[]): Labels to remove
 
@@ -98,22 +101,23 @@ const analyzeTool = createAnalyzeContentTool();
 ```
 
 **Parameters:**
+
 - `title` (string): Issue or PR title
 - `body` (string, optional): Issue or PR body
 - `type` ("issue" | "pull_request"): Content type
 
 **Label Rules:**
 
-| Keyword | Label |
-|---------|-------|
-| bug, fix, error, crash | type:bug |
-| feat, add, implement | type:feature |
-| refactor | type:refactoring |
-| test, coverage | type:test |
-| doc, readme | type:documentation |
-| critical, urgent | priority:high |
-| low priority | priority:low |
-| breaking, major (PR only) | breaking:yes |
+| Keyword                   | Label              |
+| ------------------------- | ------------------ |
+| bug, fix, error, crash    | type:bug           |
+| feat, add, implement      | type:feature       |
+| refactor                  | type:refactoring   |
+| test, coverage            | type:test          |
+| doc, readme               | type:documentation |
+| critical, urgent          | priority:high      |
+| low priority              | priority:low       |
+| breaking, major (PR only) | breaking:yes       |
 
 **Default:** priority:medium
 
@@ -135,6 +139,7 @@ agent.subscribe((event, signal) => {
 ```
 
 **Event Types:**
+
 - `agent_start` - Agent begins processing
 - `agent_end` - Agent finishes (includes final messages)
 - `turn_start` - New turn begins
@@ -158,17 +163,22 @@ interface AIConfig {
 
 ## Supported Providers
 
-| Provider | API Endpoint | Models |
-|----------|--------------|--------|
-| OpenAI | `api.openai.com/v1` | GPT-4, GPT-3.5, o1, o3 |
-| Anthropic | `api.anthropic.com/v1` | Claude 3.5, Claude 3, Opus |
-| Google | `generativelanguage.googleapis.com/v1` | Gemini 1.5, Gemini 2.0 |
-| Local | Custom | vLLM, Ollama |
+| Provider  | API Endpoint                           | Models                     |
+| --------- | -------------------------------------- | -------------------------- |
+| OpenAI    | `api.openai.com/v1`                    | GPT-4, GPT-3.5, o1, o3     |
+| Anthropic | `api.anthropic.com/v1`                 | Claude 3.5, Claude 3, Opus |
+| Google    | `generativelanguage.googleapis.com/v1` | Gemini 1.5, Gemini 2.0     |
+| Local     | Custom                                 | vLLM, Ollama               |
 
 ## Example Usage
 
 ```typescript
-import { AgentCore, createAddLabelsTool, createRemoveLabelsTool, createAnalyzeContentTool } from "./harness";
+import {
+  AgentCore,
+  createAddLabelsTool,
+  createRemoveLabelsTool,
+  createAnalyzeContentTool,
+} from "./harness";
 
 const agent = new AgentCore({
   tools: [

@@ -30,11 +30,11 @@ const response = await handler.handle(request);
 
 ### Response Codes
 
-| Status | Meaning |
-|--------|---------|
-| 200 | Success |
-| 429 | Rate limit exceeded or invalid signature |
-| 500 | Internal error |
+| Status | Meaning                                  |
+| ------ | ---------------------------------------- |
+| 200    | Success                                  |
+| 429    | Rate limit exceeded or invalid signature |
+| 500    | Internal error                           |
 
 ## Validation
 
@@ -45,11 +45,7 @@ Validates GitHub webhook signatures using HMAC SHA-256:
 ```typescript
 import { validateGitHubWebhook } from "./webhook/validation";
 
-const result = await validateGitHubWebhook(
-  payload,
-  signature,
-  secret
-);
+const result = await validateGitHubWebhook(payload, signature, secret);
 
 if (!result.valid) {
   console.error(result.error);
@@ -59,6 +55,7 @@ if (!result.valid) {
 **Signature Format:** `sha256=<hex>`
 
 **Example:**
+
 ```bash
 # GitHub sends:
 x-hub-signature-256: sha256=abc123...
@@ -73,12 +70,13 @@ const isValid = await verifyHMAC(payload, secret, "sha256=abc123...");
 
 ```typescript
 interface RateLimitConfig {
-  windowMs: number;    // Time window in milliseconds
-  maxRequests: number;  // Max requests per window
+  windowMs: number; // Time window in milliseconds
+  maxRequests: number; // Max requests per window
 }
 ```
 
 **Default Configuration:**
+
 ```typescript
 {
   windowMs: 60000,    // 1 minute
@@ -115,12 +113,13 @@ if (!allowed) {
 
 ```typescript
 interface QueueConfig {
-  maxAttempts: number;  // Maximum retry attempts
-  backoffMs: number;     // Base backoff time in milliseconds
+  maxAttempts: number; // Maximum retry attempts
+  backoffMs: number; // Base backoff time in milliseconds
 }
 ```
 
 **Default Configuration:**
+
 ```typescript
 {
   maxAttempts: 5,
@@ -173,9 +172,9 @@ console.log(`Failed: ${queue.dlqSize()}`);
 
 ### GitHub Event Types
 
-| Event | Action | Classification |
-|-------|--------|----------------|
-| issues | opened, closed, reopened | Bug, Story, Task, Spike |
+| Event        | Action                      | Classification             |
+| ------------ | --------------------------- | -------------------------- |
+| issues       | opened, closed, reopened    | Bug, Story, Task, Spike    |
 | pull_request | opened, closed, synchronize | Risk, Refactoring, Testing |
 
 ### Payload Structure
@@ -213,12 +212,12 @@ interface PayloadMeta {
 
 Classifies issues into categories:
 
-| Category | Keywords |
-|----------|----------|
-| Bug | bug, fix, error, crash |
-| Story | feat, feature, enhancement |
-| Task | General work items |
-| Spike | Research, investigation |
+| Category | Keywords                   |
+| -------- | -------------------------- |
+| Bug      | bug, fix, error, crash     |
+| Story    | feat, feature, enhancement |
+| Task     | General work items         |
+| Spike    | Research, investigation    |
 
 ### PR Analysis
 

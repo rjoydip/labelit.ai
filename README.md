@@ -13,22 +13,18 @@ labelit.ai is a monolithic platform for processing webhook events from GitHub an
 ## Project Structure
 
 ```
-labelit.ai/
-├── src/
-│   ├── harness/        # PI tools integration (Agent, streamSimple)
-│   ├── providers/      # GitHub provider implementations
-│   │   └── github/
-│   ├── webhook/       # Webhook handling with validation, retry, rate limiting
-│   ├── services/      # Core business logic
-│   ├── ai/            # AI processing
-│   ├── types/         # TypeScript types
-│   ├── utils/         # Utility functions
-│   └── config/         # Configuration
-├── docs/               # Documentation
-├── tests/              # Test files
-├── wrangler.toml       # Cloudflare Workers configuration
-└── package.json        # Single package.json
+src/
+├── harness/        # PI tools integration (AgentCore, streamSimple)
+├── providers/      # GitHub providers (Actions, App)
+├── webhook/        # Webhook handling (validation, retry, rate limiting)
+├── services/       # Core business logic (analyzer, feedback)
+├── ai/             # AI processing (processor, prompts)
+├── types/          # TypeScript types
+├── utils/          # Utility functions
+└── config/         # Configuration
 ```
+
+For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Getting Started
 
@@ -86,36 +82,30 @@ wrangler secret put GITHUB_APP_PRIVATE_KEY
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `PI_PROVIDER` | LLM provider (openai, anthropic, google) | Yes |
-| `PI_API_KEY` | API key for LLM provider | Yes |
-| `PI_MODEL_NAME` | Model name (e.g., gpt-4o-mini) | No |
-| `WEBHOOK_SECRET` | GitHub webhook secret | Yes |
-| `GITHUB_TOKEN` | GitHub personal access token | For Actions |
-| `GITHUB_APP_ID` | GitHub App ID | For App |
-| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key | For App |
-| `GITHUB_APP_INSTALLATION_ID` | GitHub App installation ID | For App |
+| Variable                     | Description                              | Required    |
+| ---------------------------- | ---------------------------------------- | ----------- |
+| `PI_PROVIDER`                | LLM provider (openai, anthropic, google) | Yes         |
+| `PI_API_KEY`                 | API key for LLM provider                 | Yes         |
+| `PI_MODEL_NAME`              | Model name (e.g., gpt-4o-mini)           | No          |
+| `WEBHOOK_SECRET`             | GitHub webhook secret                    | Yes         |
+| `GITHUB_TOKEN`               | GitHub personal access token             | For Actions |
+| `GITHUB_APP_ID`              | GitHub App ID                            | For App     |
+| `GITHUB_APP_PRIVATE_KEY`     | GitHub App private key                   | For App     |
+| `GITHUB_APP_INSTALLATION_ID` | GitHub App installation ID               | For App     |
 
 ## Technology Stack
 
-- **Runtime**: Cloudflare Workers
-- **Framework**: Hono
-- **Package Manager**: Bun
-- **Language**: TypeScript
-- **AI Integration**: @earendil-works/pi-ai, @earendil-works/pi-agent-core
-- **Linting**: oxlint
-- **Formatting**: oxfmt
-- **Testing**: Vitest
+| Component | Technology |
+|-----------|-------------|
+| Runtime | Cloudflare Workers |
+| Framework | Hono |
+| Package Manager | Bun |
+| AI | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
+| Testing | Vitest |
+| Linting | oxlint |
+| Formatting | oxfmt |
 
-## Documentation
-
-Detailed documentation can be found in the `/docs` directory:
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Providers](docs/PROVIDERS.md)
-- [Harness](docs/HARNESS.md)
-- [Webhook](docs/WEBHOOK.md)
+For detailed documentation, see the `/docs` directory.
 
 ## Contributing
 
