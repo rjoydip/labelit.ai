@@ -187,4 +187,3 @@ export class GitHubAppProvider implements GitHubProvider {
     };
   }
 }
-
