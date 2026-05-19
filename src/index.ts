@@ -1,3 +1,18 @@
+import { Hono } from "hono";
+import type { Env } from "./types/env";
+import { WebhookHandler } from "./webhook/handler";
+
+const app = new Hono<{ Bindings: Env }>();
+
+app.post("/webhook/events", async (c) => {
+  const handler = new WebhookHandler(c.env);
+  return handler.handle(c.req.raw);
+});
+
+app.get("/", () => new Response("labelit.ai - AI-powered issue labeling"));
+
+export default app;
+
 export {
   AgentCore,
   PiAI,
@@ -19,7 +34,7 @@ export type { GitHubProvider } from "./providers/github/types";
 
 export * from "./services";
 export * from "./ai/processor";
-export * from "./ai/prompts";
+export { issuePrompt, prPrompt, labelingPrompt } from "./ai/prompts";
 export * from "./utils";
 export * from "./types";
 export * from "./config";

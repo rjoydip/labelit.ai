@@ -34,26 +34,46 @@ export class GitHubAppProvider implements GitHubProvider {
     }
   }
 
-  private base64ToBuffer(base64: string): Buffer {
-    return Buffer.from(base64.replace(/-----.*?-----/g, "").replace(/\s/g, ""), "base64");
-  }
-
-  private createJWT(): string {
-    const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64");
+  private async createJWT(): Promise<string> {
+    const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
     const now = Math.floor(Date.now() / 1000);
     const payload: JWTPayload = {
       iss: this.appID,
       iat: now,
       exp: now + 600,
     };
-    const payloadEncoded = Buffer.from(JSON.stringify(payload)).toString("base64");
+    const payloadEncoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
 
-    const crypto = require("crypto");
-    const sign = crypto.createSign("RSA-SHA256");
-    sign.update(`${header}.${payloadEncoded}`);
-    const signature = sign.sign(this.privateKey, "base64");
+    const signingInput = `${header}.${payloadEncoded}`;
+    const keyData = await crypto.subtle.importKey(
+      "pkcs8",
+      this.pemToArrayBuffer(this.privateKey),
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
 
-    return `${header}.${payloadEncoded}.${signature}`;
+    const signature = await crypto.subtle.sign(
+      "RSASSA-PKCS1-v1_5",
+      keyData,
+      new TextEncoder().encode(signingInput),
+    );
+
+    const signatureBase64 = Buffer.from(signature).toString("base64url");
+    return `${signingInput}.${signatureBase64}`;
+  }
+
+  private pemToArrayBuffer(pem: string): ArrayBuffer {
+    const base64 = pem
+      .replace(/-----BEGIN.*?-----/g, "")
+      .replace(/-----END.*?-----/g, "")
+      .replace(/\s/g, "");
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
   }
 
   private async getInstallationToken(): Promise<string> {
@@ -61,7 +81,7 @@ export class GitHubAppProvider implements GitHubProvider {
       return this.token;
     }
 
-    const jwt = this.createJWT();
+    const jwt = await this.createJWT();
     const response = await fetch(
       `${this.baseUrl}/app/installations/${this.installationID}/access_tokens`,
       {
@@ -167,3 +187,4 @@ export class GitHubAppProvider implements GitHubProvider {
     };
   }
 }
+

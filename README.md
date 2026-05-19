@@ -66,8 +66,7 @@ labelit.ai/
 │   ├── providers/     # GitHub provider implementations
 │   │   └── github/
 │   │       ├── actions.ts  # GitHub Actions
-│   │       ├── cli.ts      # GitHub CLI
-│   │       └── app.ts      # GitHub App
+│   │       └── app.ts     # GitHub App (JWT signing with Web Crypto API)
 │   ├── webhook/       # Webhook handling
 │   │   ├── handler.ts  # Webhook handler
 │   │   ├── validation.ts  # Signature verification

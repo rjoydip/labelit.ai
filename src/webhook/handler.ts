@@ -1,6 +1,5 @@
 import type { Env } from "../types/env";
 import type { PayloadMeta } from "../types/basic";
-import type { HonoRequest } from "hono/request";
 import { PRAnalyzer, TicketAnalyzer } from "../services";
 import { createErrorResponse, createSuccessResponse } from "../utils";
 import { validateGitHubWebhook } from "./validation";
@@ -86,14 +85,14 @@ export class WebhookHandler {
     };
   }
 
-  private async validateRequest(req: HonoRequest): Promise<boolean> {
-    const clientId = req.header("x-forwarded-for") || "unknown";
+  private async validateRequest(req: Request): Promise<boolean> {
+    const clientId = req.headers.get("x-forwarded-for") || "unknown";
     const allowed = await this.rateLimiter.isAllowed(clientId);
     if (!allowed) {
       return false;
     }
 
-    const signature = req.header("x-hub-signature-256") ?? null;
+    const signature = req.headers.get("x-hub-signature-256") ?? null;
     const payload = await req.text();
     const result = await validateGitHubWebhook(
       payload,
@@ -103,7 +102,7 @@ export class WebhookHandler {
     return result.valid;
   }
 
-  public async handle(req: HonoRequest) {
+  public async handle(req: Request) {
     try {
       const reqPayload = await req.json();
       const { payload, userPrompt }: PayloadMeta = this.preparePayload(reqPayload);

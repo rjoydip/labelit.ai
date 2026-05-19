@@ -3,24 +3,14 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-[description]
-default = "AI-powered issue labeling via webhooks"
-
 [ai]
 binding = "AI"
 
-[variables]
+[vars]
 CACHE_TTL = "3700"
 CACHE_NAMESPACE = "labelit-ai"
 PI_PROVIDER = "openai"
 PI_MODEL_NAME = "gpt-4o-mini"
-
-# Supported PI_PROVIDER values:
-# - openai (default)
-# - anthropic
-# - google
-# - deepseek
-# - openrouter
 
 # Secrets (set via `wrangler secret put <name>`):
 # WEBHOOK_SECRET         - GitHub webhook secret for signature verification
@@ -33,38 +23,5 @@ binding = "KV"
 id = "bf906e569452444faa2bca65bc582a8c"
 preview_id = "bf906e569452444faa2bca65bc582a8c"
 
-# Development configuration
-[dev]
-port = 8787
-local_protocol = "http"
-
-# Deployment regions (uncomment to specify)
-# [deployments]
-# strategy = "sequential"
-# region = "automatic"
-
-# Observability
-[observability]
-enabled = true
-log_level = "info"
-
-# Build configuration
 [build]
 command = ""
-cwd = "."
-watch_dir = ["src"]
-
-# Compatibility for Node.js modules
-[experimental]
-enable_early_hints = true
-
-# Durable Objects (for future use)
-# [[durable_objects.bindings]]
-# name = "LABELIT_DO"
-# class_name = "LabelitDO"
-
-# R2 (for future use - storing PR diffs, etc.)
-# [[r2_buckets]]
-# binding = "ASSETS"
-# bucket_name = "labelit-assets"
-# preview_bucket_name = "labelit-assets-preview"
