@@ -1,119 +1,73 @@
-# Labelit.ai Agent Usage Guidelines
+# Labelit.ai Agent Guidelines
 
-This document provides guidelines for AI agents working on the labelit.ai codebase.
+Guidelines for AI agents working on the labelit.ai codebase.
 
-## Overview
+## Quick Start
 
-Labelit.ai is a **monolithic** application using Bun as the package manager. The codebase consists of several modules:
+1. Read [README.md](README.md) for project overview
+2. Check `package.json` for dependencies
+3. Follow established code patterns
 
-- `src/harness/` - PI tools integration (AI orchestration)
-- `src/providers/` - GitHub provider implementations
-- `src/webhook/` - Webhook handling with validation, retry, rate limiting
-- `src/services/` - Core business logic
-- `src/ai/` - AI processing
-- `src/types/` - TypeScript types
-- `src/utils/` - Utility functions
-- `src/config/` - Configuration
+## Development Commands
 
-## Best Practices
+```bash
+bun install     # Install dependencies
+bun run dev     # Development server
+bun run build   # Build for production
+bun run lint    # Lint code
+bun run test    # Run tests
+bun run typecheck  # Type check
+```
 
-### 1. Understanding the Codebase
+## Module Guidelines
 
-Before making changes, agents should:
+### harness/ - PI Tools Integration
 
-- Review the README.md for project overview
-- Check package.json for dependencies
-- Examine existing code patterns in similar modules
-- Follow the established code style and patterns
+- Uses `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`
+- See [docs/HARNESS.md](docs/HARNESS.md)
 
-### 2. Making Changes
+### providers/ - GitHub Providers
 
-When modifying code:
+- Actions and App authentication
+- See [docs/PROVIDERS.md](docs/PROVIDERS.md)
 
-- Always read existing files before editing
-- Follow the established code style
-- Keep changes focused and minimal
-- Update tests when modifying functionality
-- Ensure type safety with TypeScript
+### webhook/ - Webhook Handling
 
-### 3. Running Commands
+- Validation, retry, rate limiting
+- See [docs/WEBHOOK.md](docs/WEBHOOK.md)
 
-Standard development workflow:
+### services/ - Core Business Logic
 
-- Install dependencies: `bun install`
-- Run development: `bun run dev`
-- Build: `bun run build`
-- Lint: `bun run lint`
-- Format: `bun run format`
-- Type check: `bun run typecheck`
-- Run tests: `bun run test`
-
-### 4. Module Guidelines
-
-#### Harness (`src/harness/`)
-
-- Focuses on AI processing and prompt management
-- Uses PI tools (@earendil-works/pi-ai, @earendil-works/pi-agent-core) for unified LLM API
-- Implements tool definitions for labeling operations
-
-#### Providers (`src/providers/`)
-
-- Contains GitHub provider implementations
-- Supports Actions, CLI, and App authentication methods
-- Follows factory pattern for provider creation
-
-#### Webhook (`src/webhook/`)
-
-- Cloudflare Worker handling webhook events
-- Includes signature verification, retry logic, rate limiting
-- Uses Hono framework
-
-#### Services (`src/services/`)
-
-- Contains core business logic
-- Includes feedback processing, PR/Ticket analyzers
+- Analysis and feedback processing
 - Framework-agnostic where possible
 
-### 5. PI Tools Integration
+## Key Patterns
 
-When working with the harness:
-
-- Use `streamSimple` from `@earendil-works/pi-ai` for LLM calls
-- Use `Agent` from `@earendil-works/pi-agent-core` for agent runtime
-- Define custom tools using the AgentTool interface
-- Follow the tool definition pattern in `src/harness/`
-
-Example:
+### PI Tools Integration
 
 ```typescript
-import { Agent } from "@earendil-works/pi-agent-core";
+import { AgentCore } from "./harness";
 import { streamSimple } from "@earendil-works/pi-ai";
 
-const agent = new Agent({
+const agent = new AgentCore({
   streamFn: streamSimple,
-  getApiKey: (provider) => process.env[`${provider.toUpperCase()}_API_KEY`],
+  getApiKey: (provider) => process.env.PI_API_KEY,
 });
 ```
 
-### 6. Provider Implementation
+### Provider Implementation
 
-When adding new providers:
+Follow `src/providers/github/types.ts` interface for new providers.
 
-- Follow the interface in `src/providers/github/types.ts`
-- Implement authentication method
-- Support getIssues, getPullRequests, addLabels, removeLabels
+## Rules
 
-## Limitations and Considerations
-
-- Agents should avoid breaking changes without explicit instruction
-- Security-sensitive changes require special attention
-- Cross-module changes need coordination
-- Always verify that changes don't break existing functionality
+- Keep changes focused and minimal
+- Update tests when modifying functionality
+- Ensure TypeScript type safety
+- Avoid breaking changes without explicit instruction
 
 ## Getting Help
 
-If uncertain about any aspect of the codebase:
-
 - Refer to existing similar implementations
-- Check comments and documentation
-- When in doubt, ask for clarification before proceeding
+- Check documentation in `/docs` folder
+- Ask for clarification when uncertain

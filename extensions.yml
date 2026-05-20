@@ -1,0 +1,30 @@
+name: labelit
+description: AI-powered issue labeling using labelit.ai
+version: 0.0.2
+owner: rjoydip
+skipGoTooling: false
+
+commands:
+  - name: labelit
+    description: |
+      Manage labels on GitHub issues and pull requests using AI.
+
+      Use the labelit CLI to analyze issues and PRs, and automatically
+      suggest or apply labels based on content analysis.
+
+      Examples:
+      $ gh labelit analyze owner/repo#123 --title "Fix bug in login"
+      $ gh labelit add-labels owner/repo#123 bug priority:high
+      $ gh labelit remove-labels owner/repo#123 wontfix
+
+    inline:
+      - synopsis: |
+          Analyze an issue or PR and suggest labels using AI
+        options: |
+          -R, --repo <[owner/]repo>  Select repository
+        arguments:
+          - name: target
+            description: |
+              Issue or PR target in format owner/repo#number or just #number
+              when used within a repository context.
+            required: true

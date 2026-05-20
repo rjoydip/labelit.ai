@@ -7,6 +7,7 @@ dist
 .turbo
 .env
 *.tgz
+*.labelit
 
 # code coverage
 coverage

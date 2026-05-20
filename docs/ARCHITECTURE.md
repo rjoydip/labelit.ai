@@ -2,167 +2,83 @@
 
 This document provides a detailed overview of the labelit.ai architecture.
 
-## System Architecture
-
-labelit.ai follows a monolithic architecture with clearly separated layers:
+## System Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         External Inputs                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │
-│  │ GitHub       │  │ GitHub CLI   │  │ GitHub App   │             │
-│  │ Actions      │  │              │  │              │             │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘             │
-└─────────┼─────────────────┼─────────────────┼──────────────────────┘
-          │                 │                 │
-          ▼                 ▼                 ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       Providers Layer                                │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  src/providers/github/                                        │  │
-│  │  - actions.ts (GitHub Actions provider)                     │  │
-│  │  - cli.ts (GitHub CLI provider)                              │  │
-│  │  - app.ts (GitHub App provider)                             │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       Webhook Service                                │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
-│  │ Validation  │  │ Queue       │  │ Rate Limit  │                │
-│  │ - HMAC      │  │ - Retry     │  │ - Per IP    │                │
-│  │ - Token     │  │ - DLQ       │  │ - Config    │                │
-│  └─────────────┘  └─────────────┘  └─────────────┘                │
-└─────────────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  @earendil-works/pi-ai     - Unified LLM API (OpenAI, Anthropic, Google)  │  │
-│  @earendil-works/pi-agent-core - Agent runtime with tool calling         │  │
-└─────────────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       Core Services                                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ Analyzer │  │ Feedback │  │ AI Proc  │  │ Utils    │           │
-│  │ - PR     │  │ Service  │  │          │  │          │           │
-│  │ - Ticket │  │          │  │          │  │          │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-└─────────────────────────────────────────────────────────────────────┘
+GitHub Webhooks → Webhook Handler → AI Classification → Label Management
+                     ↓
+              Validation, Queue, Rate Limiting
+                     ↓
+              PI Tools (Agent, LLM)
+                     ↓
+              Core Services (Analysis, Feedback)
 ```
 
 ## Directory Structure
 
 ```
 src/
-├── harness/           # PI tools integration
-│   ├── index.ts       # Harness entry point (Agent, streamSimple)
-│   └── createAddLabelsTool.ts  # Labeling tool definitions
-│
-├── providers/        # GitHub provider implementations
-│   └── github/
-│       ├── index.ts   # Provider exports
-│       ├── types.ts   # Type definitions
-│       ├── factory.ts # Provider factory
-│       ├── actions.ts # GitHub Actions
-│       ├── cli.ts     # GitHub CLI
-│       └── app.ts     # GitHub App
-│
-├── webhook/         # Webhook handling
-│   ├── index.ts     # Module exports
-│   ├── handler.ts   # Main webhook handler
-│   ├── validation.ts # Signature verification
-│   ├── queue.ts     # Queue with retry logic
-│   └── rate-limit.ts # Rate limiting
-│
-├── services/        # Core business logic
-│   ├── index.ts     # Module exports
-│   ├── feedback.ts  # Feedback service
-│   └── analyzer/
-│       ├── pull-request.ts
-│       └── ticket.ts
-│
-├── ai/             # AI processing
-│   ├── processor.ts
-│   └── prompts.ts
-│
-├── types/          # TypeScript types
-│   ├── index.ts
-│   ├── basic.ts
-│   └── env.ts
-│
-├── utils/          # Utility functions
-│   └── index.ts
-│
-└── config/         # Configuration
-    └── index.ts
+├── harness/           # PI tools integration (AgentCore, streamSimple)
+├── providers/         # GitHub providers (Actions, App)
+├── webhook/           # Webhook handling (handler, validation, queue, rate-limit)
+├── services/          # Core business logic (analyzer, feedback)
+├── ai/                # AI processing (processor, prompts)
+├── types/             # TypeScript types
+├── utils/             # Utility functions
+└── config/            # Configuration
 ```
 
 ## Data Flow
 
-1. **GitHub** sends webhook event
-2. **Webhook handler** receives and validates the request
-3. **Validation** checks HMAC signature/rate limits
-4. **Queue** processes with retry logic if needed
-5. **Harness** orchestrates AI processing
-6. **Agent Core** manages tool execution and state
-7. **PI tools** handles LLM calls (OpenAI/Anthropic/Google)
-8. **Services** perform business logic (analysis, feedback)
-9. **Results** stored in database for analytics
+1. **Webhook Reception** - GitHub sends events
+2. **Validation** - HMAC signature and rate limiting
+3. **Queue Processing** - Retry logic with dead letter queue
+4. **AI Classification** - Analyze content using PI tools
+5. **Label Management** - Add/remove labels via providers
 
-## Security Considerations
+## Key Components
 
-- Webhook signature verification (HMAC for GitHub)
+### Webhook Handler
+
+- Signature verification (HMAC SHA-256)
 - Rate limiting per client IP
-- Exponential backoff retry with dead letter queue
-- Provider authentication via tokens/JWT
-- Input validation prevents injection attacks
+- Queue with exponential backoff retry
+- Dead letter queue for failed items
 
-## Scalability Features
+### AI Harness (PI Tools)
 
-- Horizontal scaling via Cloudflare Workers
-- Queue buffering for traffic spikes
-- Rate limiting prevents abuse
-- Efficient resource usage for LLM calls
+- `AgentCore` - Agent runtime with tool calling
+- `streamSimple` - Unified LLM API
+- Custom tools: add_labels, remove_labels, analyze_content
 
-## Technology Choices
+### GitHub Providers
 
-### Cloudflare Workers
+- **Actions** - Token-based authentication
+- **App** - JWT signing with Web Crypto API
 
-- Global edge network for low latency
-- Automatic scaling without server management
-- Generous free tier for development
-- Built-in KV storage and R2 object storage
-- Workers AI for accessible machine learning
+## Security
 
-### Bun
+- HMAC signature verification
+- Rate limiting (configurable)
+- JWT authentication for App provider
+- Input validation
 
-- Fast package installation
-- Built-in test runner
-- Optimized for TypeScript
+## Technology Stack
 
-### Hono Framework
+| Component       | Technology                                           |
+| --------------- | ---------------------------------------------------- |
+| Runtime         | Cloudflare Workers                                   |
+| Framework       | Hono                                                 |
+| Package Manager | Bun                                                  |
+| AI              | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
+| Testing         | Vitest                                               |
+| Linting         | oxlint                                               |
+| Formatting      | oxfmt                                                |
 
-- Minimal bundle size for fast cold starts
-- Middleware architecture
-- Excellent TypeScript integration
+## Configuration
 
-### AI Harness
+See individual module documentation:
 
-- Unified multi-provider LLM API
-- Agent runtime with tool calling
-- State management for multi-turn conversations
-
-### Vitest
-
-- Fast test execution
-- Built-in coverage reporting
-- Excellent ESM support
-
-### oxlint + oxfmt
-
-- Blazing fast linting and formatting
-- Zero-configuration defaults
-- Modern JavaScript/TypeScript support
+- [Providers](PROVIDERS.md)
+- [Harness](HARNESS.md)
+- [Webhook](WEBHOOK.md)

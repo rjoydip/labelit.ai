@@ -4,92 +4,33 @@
 [![CI](https://github.com/rjoydip/labelit.ai/actions/workflows/ci.yml/badge.svg)](https://github.com/rjoydip/labelit.ai/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/npm/v/labelit.ai.svg)](https://www.npmjs.com/package/labelit.ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://badges.frapsoft.com/typescript/code/typescript.svg?v=101)](https://www.typescriptlang.org/)
+[![TypeScript](https://badges.frapsoft.com/typescript/code/typescript.svg?v=101)](https://www.typestrong.com/)
 
 ## Overview
 
-labelit.ai is a monolithic platform for processing webhook events from various sources (Jira, GitHub, GitLab) and applying AI-powered labeling to issues and pull requests. The system uses Cloudflare Workers for event ingestion and includes a unified harness for AI orchestration.
-
-## Architecture
-
-```mermaid
-flowchart TD
-    subgraph Sources
-        BB[Jira]
-        GH[GitHub]
-        GL[GitLab]
-    end
-
-    subgraph Providers
-        GHA[GitHub Actions]
-        GHC[GitHub CLI]
-        GHA2[GitHub App]
-    end
-
-    subgraph Harness
-        PIA[PI AI]
-        PIC[PI Agent Core]
-        TOLS[Custom Tools]
-    end
-
-    subgraph Webhook
-        VAL[Validation]
-        QUE[Queue]
-        RAT[Rate Limit]
-    end
-
-    subgraph Core
-        SVC[Services]
-        AI[AI Processing]
-    end
-
-    BB --> GH
-    GH --> GHA
-    GL --> GHA
-    GHA --> VAL
-    VAL --> QUE
-    QUE --> RAT
-    RAT --> PIA
-    PIA --> PIC
-    PIC --> TOLS
-    TOLS --> SVC
-    SVC --> AI
-```
+labelit.ai is a monolithic platform for processing webhook events from GitHub and applying AI-powered labeling to issues and pull requests. The system uses Cloudflare Workers for event ingestion and includes PI tools for AI orchestration.
 
 ## Project Structure
 
 ```
-labelit.ai/
-├── src/
-│   ├── harness/        # PI tools integration (Agent, streamSimple)
-│   │   └── tools/      # Custom tool definitions for labeling
-│   ├── providers/     # GitHub provider implementations
-│   │   └── github/
-│   │       ├── actions.ts  # GitHub Actions
-│   │       └── app.ts     # GitHub App (JWT signing with Web Crypto API)
-│   ├── webhook/       # Webhook handling
-│   │   ├── handler.ts  # Webhook handler
-│   │   ├── validation.ts  # Signature verification
-│   │   ├── queue.ts    # Queue with retry logic
-│   │   └── rate-limit.ts  # Rate limiting
-│   ├── services/      # Core business logic
-│   ├── ai/           # AI processing
-│   ├── types/        # TypeScript types
-│   ├── utils/        # Utility functions
-│   └── config/       # Configuration
-├── docs/             # Documentation
-├── scripts/          # Utility scripts
-├── package.json     # Single package.json
-├── tsconfig.json    # Single tsconfig
-└── webhook.ts       # Webhook entry point
+src/
+├── harness/        # PI tools integration (AgentCore, streamSimple)
+├── providers/      # GitHub providers (Actions, App)
+├── webhook/        # Webhook handling (validation, retry, rate limiting)
+├── services/       # Core business logic (analyzer, feedback)
+├── ai/             # AI processing (processor, prompts)
+├── types/          # TypeScript types
+├── utils/          # Utility functions
+└── config/         # Configuration
 ```
+
+For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) (version 1.1.3 or later)
-- Node.js 18+
+- [Bun](https://bun.sh/) (version 1.3+)
 - Git
 - Cloudflare account (for deployment)
 
@@ -98,11 +39,12 @@ labelit.ai/
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/labelit.ai.git
+   git clone https://github.com/rjoydip/labelit.ai.git
    cd labelit.ai
    ```
 
 2. Install dependencies:
+
    ```bash
    bun install
    ```
@@ -115,6 +57,25 @@ Run the development server:
 bun run dev
 ```
 
+### CLI Usage
+
+```bash
+# Local
+bun run labelit start
+bun run labelit add-labels owner/repo#123 bug priority:high
+
+# GitHub Actions
+- uses: rjoydip/labelit.ai/labelit@main
+  with:
+    action: analyze
+    target: owner/repo#123
+
+# GitHub CLI (after extension setup)
+gh labelit analyze owner/repo#123
+```
+
+See [docs/CLI.md](docs/CLI.md) for full documentation.
+
 ### Available Scripts
 
 - `bun run dev` - Start development server
@@ -124,6 +85,7 @@ bun run dev
 - `bun run format` - Format code (oxfmt)
 - `bun run test` - Run tests
 - `bun run typecheck` - Type check
+- `bun run knip` - Check for unused dependencies
 
 ### Deployment
 
@@ -135,77 +97,42 @@ wrangler secret put PI_API_KEY
 wrangler secret put GITHUB_APP_PRIVATE_KEY
 ```
 
-## GitHub Providers
+## Configuration
 
-labelit.ai supports three GitHub provider types:
+### Environment Variables
 
-| Provider           | Description                     | Authentication           |
-| ------------------ | ------------------------------- | ------------------------ |
-| **GitHub Actions** | For workflow-based automation   | `GITHUB_TOKEN`           |
-| **GitHub CLI**     | For local development with `gh` | `gh auth`                |
-| **GitHub App**     | For multi-repository access     | JWT + Installation token |
-
-### Usage
-
-```typescript
-import { createGitHubProvider } from "./providers/github";
-
-const provider = createGitHubProvider("actions", {
-  token: process.env.GITHUB_TOKEN,
-});
-
-await provider.authenticate();
-const issues = await provider.getIssues({ owner: "user", repo: "repo" });
-```
-
-## Webhook Configuration
-
-Configure webhook validation and rate limiting:
-
-```typescript
-import { WebhookHandler, DEFAULT_CONFIG } from "./webhook";
-
-const handler = new WebhookHandler(env);
-const response = await handler.handle(request);
-```
-
-## Harness (PI Tools Integration)
-
-The harness provides unified AI orchestration using PI tools:
-
-```typescript
-import { Harness } from "./harness";
-
-const harness = new Harness({
-  ai: {
-    provider: "openai",
-    apiKey: process.env.OPENAI_API_KEY,
-    model: "gpt-4",
-  },
-});
-
-const result = await harness.process(event);
-```
+| Variable                     | Description                              | Required    |
+| ---------------------------- | ---------------------------------------- | ----------- |
+| `PI_PROVIDER`                | LLM provider (openai, anthropic, google) | Yes         |
+| `PI_API_KEY`                 | API key for LLM provider                 | Yes         |
+| `PI_MODEL_NAME`              | Model name (e.g., gpt-4o-mini)           | No          |
+| `WEBHOOK_SECRET`             | GitHub webhook secret                    | Yes         |
+| `GITHUB_TOKEN`               | GitHub personal access token             | For Actions |
+| `GITHUB_APP_ID`              | GitHub App ID                            | For App     |
+| `GITHUB_APP_PRIVATE_KEY`     | GitHub App private key                   | For App     |
+| `GITHUB_APP_INSTALLATION_ID` | GitHub App installation ID               | For App     |
 
 ## Technology Stack
 
-- **Runtime**: Cloudflare Workers
-- **Framework**: Hono
-- **Package Manager**: Bun
-- **Language**: TypeScript
-- **AI Integration**: @earendil-works/pi-ai, @earendil-works/pi-agent-core
-- **Linting**: oxlint
-- **Formatting**: oxfmt
-- **Testing**: Vitest
+| Component       | Technology                                           |
+| --------------- | ---------------------------------------------------- |
+| Runtime         | Cloudflare Workers                                   |
+| Framework       | Hono                                                 |
+| Package Manager | Bun                                                  |
+| AI              | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
+| Testing         | Vitest                                               |
+| Linting         | oxlint                                               |
+| Formatting      | oxfmt                                                |
 
 ## Documentation
 
-Additional documentation can be found in the `/docs` directory:
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Providers](docs/PROVIDERS.md) (coming soon)
-- [Harness](docs/HARNESS.md) (coming soon)
-- [Webhook Configuration](docs/WEBHOOK.md) (coming soon)
+| Topic                                | Description                     |
+| ------------------------------------ | ------------------------------- |
+| [Architecture](docs/ARCHITECTURE.md) | System design and components    |
+| [CLI](docs/CLI.md)                   | Command-line interface          |
+| [Providers](docs/PROVIDERS.md)       | GitHub provider implementations |
+| [Harness](docs/HARNESS.md)           | PI tools integration            |
+| [Webhook](docs/WEBHOOK.md)           | Webhook handling                |
 
 ## Contributing
 
@@ -214,10 +141,3 @@ Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details on our code of c
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Inspired by the need for automated issue labeling
-- Built with Bun for optimal developer experience
-- Utilizes Cloudflare Workers for scalable event processing
-- Powered by PI tools for AI orchestration
