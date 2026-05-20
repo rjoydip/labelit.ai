@@ -46,8 +46,8 @@
     "lint:ci": "bun run actions-up && bun run format:check && bun run lint && bun run typecheck"
   },
   "dependencies": {
-    "@earendil-works/pi-agent-core": "^0.75.3",
-    "@earendil-works/pi-ai": "^0.75.3",
+    "@earendil-works/pi-agent-core": "^0.75.4",
+    "@earendil-works/pi-ai": "^0.75.4",
     "hono": "^4.12.21"
   },
   "devDependencies": {
@@ -62,7 +62,7 @@
     "simple-git-hooks": "^2.13.1",
     "smee-client": "^3.1.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.6",
+    "vitest": "^4.1.7",
     "wrangler": "^4.93.0"
   },
   "simple-git-hooks": {
