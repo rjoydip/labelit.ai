@@ -3,10 +3,19 @@ export interface Env {
   AI?: Ai;
   WEBHOOK_SECRET?: string;
   GITHUB_TOKEN?: string;
+  GITHUB_PROVIDER?: GitHubProvider;
   PI_PROVIDER?: "openai" | "anthropic" | "google" | "local";
   PI_API_KEY?: string;
   PI_MODEL_NAME?: string;
   MODEL_NAME?: string;
+  CACHE_TTL?: string;
+  CACHE_NAMESPACE?: string;
+}
+
+export interface GitHubProvider {
+  type: "actions" | "app";
+  addLabels(target: string, labels: string[]): Promise<void>;
+  removeLabels(target: string, labels: string[]): Promise<void>;
 }
 
 export interface KVNamespace {

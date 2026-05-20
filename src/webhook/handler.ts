@@ -7,6 +7,18 @@ import { RateLimiter } from "./rate-limit";
 import { Queue } from "./queue";
 import { DEFAULT_CONFIG } from "../config";
 
+export interface AnalyzeInput {
+  type: "issue" | "pull_request";
+  title: string;
+  body?: string;
+  target: string;
+}
+
+export interface AnalyzeResult {
+  labels: string[];
+  confidence: number;
+}
+
 export class WebhookHandler {
   private prAnalyzer: PRAnalyzer;
   private ticketAnalyzer: TicketAnalyzer;
@@ -18,6 +30,31 @@ export class WebhookHandler {
     this.ticketAnalyzer = new TicketAnalyzer(env);
     this.rateLimiter = new RateLimiter(DEFAULT_CONFIG.rateLimit);
     this.queue = new Queue(DEFAULT_CONFIG.retry);
+  }
+
+  async analyze(input: AnalyzeInput): Promise<AnalyzeResult> {
+    const userPrompt = `${input.type === "pull_request" ? "PR" : "Issue"} Title: ${input.title}\n${input.body ? `Body: ${input.body}` : ""}`;
+
+    const payload = {
+      issue:
+        input.type === "issue"
+          ? { body: input.body, labels: [], state: "open", title: input.title }
+          : undefined,
+      pull_request:
+        input.type === "pull_request"
+          ? { body: input.body, labels: [], state: "open", title: input.title }
+          : undefined,
+      repository: { name: "", description: "" },
+    };
+
+    const promptDetails = this.ticketAnalyzer.getPrompt(userPrompt);
+    const classifiedResponse = await this.ticketAnalyzer.classify(promptDetails, payload);
+    const response = this.ticketAnalyzer.parseResponse(classifiedResponse);
+
+    return {
+      labels: [response.predictedLabel],
+      confidence: 0.8,
+    };
   }
 
   private preparePayload(payload: any): PayloadMeta {

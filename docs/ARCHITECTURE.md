@@ -65,19 +65,20 @@ src/
 
 ## Technology Stack
 
-| Component | Technology |
-|-----------|------------|
-| Runtime | Cloudflare Workers |
-| Framework | Hono |
-| Package Manager | Bun |
-| AI | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
-| Testing | Vitest |
-| Linting | oxlint |
-| Formatting | oxfmt |
+| Component       | Technology                                           |
+| --------------- | ---------------------------------------------------- |
+| Runtime         | Cloudflare Workers                                   |
+| Framework       | Hono                                                 |
+| Package Manager | Bun                                                  |
+| AI              | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
+| Testing         | Vitest                                               |
+| Linting         | oxlint                                               |
+| Formatting      | oxfmt                                                |
 
 ## Configuration
 
 See individual module documentation:
+
 - [Providers](PROVIDERS.md)
 - [Harness](HARNESS.md)
 - [Webhook](WEBHOOK.md)

@@ -10,7 +10,8 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["bun-types", "node"]
   },
   "include": ["src", "tests", "webhook.ts"],
   "exclude": ["node_modules", "dist", ".wrangler", "packages", "scripts"]

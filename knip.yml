@@ -1,11 +1,20 @@
 # https://knip.dev/reference/configuration
 
-ignoreDependencies:
-  - bun-types
-
 ignoreUnresolved:
   - bun-types
 
-# Ignore types from tsconfig - they are not actual imports
 ignoreTypes:
-  - bun
+  - bun-types
+  - node
+
+ignoreFiles:
+  - webhook.ts
+  - scripts/code-quality.ts
+  - src/cli/server-standalone.ts
+
+ignoreDependencies:
+  - "@hono/node-server"
+
+entryFiles:
+  - src/index.ts
+  - src/cli/index.ts

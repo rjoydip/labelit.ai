@@ -12,13 +12,13 @@ bun run knip       # Check unused dependencies
 
 ## Checks
 
-| Check | Command | Status |
-|-------|---------|--------|
-| Linting | `bun run lint` | ✅ oxlint |
-| Formatting | `bun run format` | ✅ oxfmt |
-| Tests | `bun run test` | ✅ Vitest |
-| Type Check | `bun run typecheck` | ✅ TypeScript |
-| Dependencies | `bun run knip` | ✅ knip |
+| Check        | Command             | Status        |
+| ------------ | ------------------- | ------------- |
+| Linting      | `bun run lint`      | ✅ oxlint     |
+| Formatting   | `bun run format`    | ✅ oxfmt      |
+| Tests        | `bun run test`      | ✅ Vitest     |
+| Type Check   | `bun run typecheck` | ✅ TypeScript |
+| Dependencies | `bun run knip`      | ✅ knip       |
 
 ## Best Practices
 

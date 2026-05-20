@@ -1,0 +1,68 @@
+name: labelit
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target repository (owner/repo#number)"
+        required: true
+        type: string
+      action:
+        description: "Action to perform (analyze|add-labels|remove-labels)"
+        required: true
+        type: choice
+        options:
+          - analyze
+          - add-labels
+          - remove-labels
+      labels:
+        description: "Labels (comma-separated for add/remove)"
+        required: false
+        type: string
+      api-url:
+        description: "labelit.ai API URL"
+        required: false
+        type: string
+      title:
+        description: "Issue/PR title (for analyze)"
+        required: false
+        type: string
+      body:
+        description: "Issue/PR body (for analyze)"
+        required: false
+        type: string
+
+jobs:
+  labelit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install labelit
+        run: bun link
+
+      - name: Run labelit
+        env:
+          LABELIT_API_URL: ${{ inputs.api-url || github.event.inputs.api-url }}
+          LABELIT_API_KEY: ${{ secrets.LABELIT_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          case "${{ inputs.action }}" in
+            analyze)
+              bunx labelit analyze "${{ inputs.target }}" "${{ inputs.title }}" "${{ inputs.body }}"
+              ;;
+            add-labels)
+              LABEL=$(echo "${{ inputs.labels }}" | tr ',' '\n')
+              bunx labelit add-labels "${{ inputs.target }}" $LABEL
+              ;;
+            remove-labels)
+              LABEL=$(echo "${{ inputs.labels }}" | tr ',' '\n')
+              bunx labelit remove-labels "${{ inputs.target }}" $LABEL
+              ;;
+          esac

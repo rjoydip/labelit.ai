@@ -1,6 +1,9 @@
 import { Agent, type AgentEvent } from "@earendil-works/pi-agent-core";
 import { streamSimple, type Tool, Type } from "@earendil-works/pi-ai";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
+import { labelingPrompt } from "../ai/prompts";
+
+export { labelingPrompt };
 
 export type { AgentEvent, Tool };
 
@@ -95,7 +98,7 @@ export function createAnalyzeContentTool(): AgentTool {
   return {
     name: "analyze_content",
     label: "Analyze Content",
-    description: "Analyze issue or PR content to suggest appropriate labels",
+    description: labelingPrompt,
     parameters: Type.Object({
       title: Type.String(),
       body: Type.Optional(Type.String()),

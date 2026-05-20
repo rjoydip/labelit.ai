@@ -57,6 +57,25 @@ Run the development server:
 bun run dev
 ```
 
+### CLI Usage
+
+```bash
+# Local
+bun run labelit start
+bun run labelit add-labels owner/repo#123 bug priority:high
+
+# GitHub Actions
+- uses: rjoydip/labelit.ai/labelit@main
+  with:
+    action: analyze
+    target: owner/repo#123
+
+# GitHub CLI (after extension setup)
+gh labelit analyze owner/repo#123
+```
+
+See [docs/CLI.md](docs/CLI.md) for full documentation.
+
 ### Available Scripts
 
 - `bun run dev` - Start development server
@@ -95,17 +114,25 @@ wrangler secret put GITHUB_APP_PRIVATE_KEY
 
 ## Technology Stack
 
-| Component | Technology |
-|-----------|-------------|
-| Runtime | Cloudflare Workers |
-| Framework | Hono |
-| Package Manager | Bun |
-| AI | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
-| Testing | Vitest |
-| Linting | oxlint |
-| Formatting | oxfmt |
+| Component       | Technology                                           |
+| --------------- | ---------------------------------------------------- |
+| Runtime         | Cloudflare Workers                                   |
+| Framework       | Hono                                                 |
+| Package Manager | Bun                                                  |
+| AI              | @earendil-works/pi-ai, @earendil-works/pi-agent-core |
+| Testing         | Vitest                                               |
+| Linting         | oxlint                                               |
+| Formatting      | oxfmt                                                |
 
-For detailed documentation, see the `/docs` directory.
+## Documentation
+
+| Topic                                | Description                     |
+| ------------------------------------ | ------------------------------- |
+| [Architecture](docs/ARCHITECTURE.md) | System design and components    |
+| [CLI](docs/CLI.md)                   | Command-line interface          |
+| [Providers](docs/PROVIDERS.md)       | GitHub provider implementations |
+| [Harness](docs/HARNESS.md)           | PI tools integration            |
+| [Webhook](docs/WEBHOOK.md)           | Webhook handling                |
 
 ## Contributing
 
