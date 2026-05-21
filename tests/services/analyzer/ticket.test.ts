@@ -1,59 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type { Env } from "../../../src/types/env";
 import type { ClassificationType } from "../../../src/types/basic";
 import { TicketAnalyzer } from "../../../src/services/analyzer/ticket";
 
-function parseResponse(result: any) {
-  let predictedLabel = "Task";
-
-  if (Array.isArray(result.labels)) {
-    if (result.labels.includes("bug")) predictedLabel = "Bug";
-    else if (result.labels.includes("story")) predictedLabel = "Story";
-    else if (result.labels.includes("spike")) predictedLabel = "Spike";
-  } else if (typeof result.category === "string") {
-    switch (result.category.toLowerCase()) {
-      case "bug":
-        predictedLabel = "Bug";
-        break;
-      case "story":
-        predictedLabel = "Story";
-        break;
-      case "spike":
-        predictedLabel = "Spike";
-        break;
-    }
-  } else {
-    const normalizedText = result.text?.trim()?.toLowerCase();
-    if (normalizedText?.includes("bug")) predictedLabel = "Bug";
-    else if (normalizedText?.includes("story")) predictedLabel = "Story";
-    else if (normalizedText?.includes("spike")) predictedLabel = "Spike";
-  }
-
-  return {
-    predictedLabel,
-    rawText: result.text || "",
-    processingTime: result.processingTime || 0,
-  };
-}
-
-vi.mock("../../../src/ai/processor", () => {
-  return {
-    AIProcessor: vi.fn().mockImplementation(function () {
-      return {
-        classify: vi.fn().mockImplementation(async () => {
-          return {
-            text: "Mock classification result",
-            processingTime: 100,
-          };
-        }),
-        parseResponse: vi.fn().mockImplementation((result) => {
-          return parseResponse(result);
-        }),
-      };
-    }),
-    __esModule: true,
-  };
-});
+// Mock the global fetch function
+const originalFetch = global.fetch;
 
 describe("TicketAnalyzer", () => {
   let ticketAnalyzer: TicketAnalyzer;
@@ -62,9 +13,37 @@ describe("TicketAnalyzer", () => {
     const mockEnv: Env = {
       KV: {} as any,
       MODEL_NAME: "test-model",
+      PI_API_KEY: "test-key",
+      PI_PROVIDER: "openai",
     };
 
     ticketAnalyzer = new TicketAnalyzer(mockEnv);
+
+    // Mock fetch to return successful response with a small delay to ensure processingTime > 0
+    (global.fetch as any) = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({
+              ok: true,
+              json: async () => ({
+                choices: [
+                  {
+                    message: {
+                      content: "Mock classification result",
+                    },
+                  },
+                ],
+              }),
+            } as Response);
+          }, 10); // 10ms delay to ensure processingTime > 0
+        }),
+    );
+  });
+
+  afterEach(() => {
+    (global.fetch as any) = originalFetch;
+    vi.restoreAllMocks();
   });
 
   it("should classify ticket content", async () => {
@@ -72,7 +51,10 @@ describe("TicketAnalyzer", () => {
 
     expect(result).toBeDefined();
     expect(result.text).toBe("Mock classification result");
-    expect(result.processingTime).toBe(100);
+    expect(result.processingTime).toBeGreaterThan(0);
+
+    // Verify fetch was called
+    expect(global.fetch).toHaveBeenCalled();
   });
 
   it("should parse response as Bug when text contains 'bug'", () => {
