@@ -26,6 +26,13 @@ src/
 ├── types/             # TypeScript types
 ├── utils/             # Utility functions
 └── config/            # Configuration
+
+tests/
+├── integration/       # Integration tests (api, webhook, env)
+├── unit/              # Unit tests (handler, validation, analyzers, feedback)
+├── services/          # Service-level tests
+├── ai/                # AI processor tests
+└── vitest-types.ts    # Shared type aliases
 ```
 
 ## Data Flow

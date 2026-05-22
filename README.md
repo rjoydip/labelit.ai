@@ -126,13 +126,14 @@ wrangler secret put GITHUB_APP_PRIVATE_KEY
 
 ## Documentation
 
-| Topic                                | Description                     |
-| ------------------------------------ | ------------------------------- |
-| [Architecture](docs/ARCHITECTURE.md) | System design and components    |
-| [CLI](docs/CLI.md)                   | Command-line interface          |
-| [Providers](docs/PROVIDERS.md)       | GitHub provider implementations |
-| [Harness](docs/HARNESS.md)           | PI tools integration            |
-| [Webhook](docs/WEBHOOK.md)           | Webhook handling                |
+| Topic                                | Description                       |
+| ------------------------------------ | --------------------------------- |
+| [Architecture](docs/ARCHITECTURE.md) | System design and components      |
+| [CLI](docs/CLI.md)                   | Command-line interface            |
+| [Providers](docs/PROVIDERS.md)       | GitHub provider implementations   |
+| [Harness](docs/HARNESS.md)           | PI tools integration              |
+| [Webhook](docs/WEBHOOK.md)           | Webhook handling                  |
+| [Contributing](docs/CONTRIBUTING.md) | How to contribute and write tests |
 
 ## Contributing
 
