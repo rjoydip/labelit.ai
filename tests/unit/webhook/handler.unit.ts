@@ -3,6 +3,15 @@ import type { TestEnv } from "../../vitest-types";
 import type { AnalyzeInput } from "../../../src/webhook/handler";
 import { WebhookHandler } from "../../../src/webhook/handler";
 
+const mockAnalyzeAndSyncPR = vi.fn();
+
+vi.mock("../../../src/services/label.service", () => {
+  const mockFn = vi.fn(function () {
+    return { analyzeAndSyncPR: mockAnalyzeAndSyncPR };
+  });
+  return { LabelService: mockFn };
+});
+
 describe("WebhookHandler", () => {
   let webhookHandler: WebhookHandler;
   let mockEnv: TestEnv;
@@ -128,11 +137,13 @@ describe("WebhookHandler", () => {
         issue: {
           body: "Test issue body",
           labels: [{ name: "bug" }],
+          number: 1,
           state: "open",
           title: "Test issue",
         },
         repository: {
           name: "test-repo",
+          full_name: "owner/test-repo",
           description: "Test repository",
         },
       };
@@ -147,10 +158,12 @@ describe("WebhookHandler", () => {
           issue: {
             body: "Test issue body",
             labels: [{ name: "bug" }],
+            number: 1,
             state: "open",
             title: "Test issue",
           },
           repository: {
+            full_name: "owner/test-repo",
             name: "test-repo",
             description: "Test repository",
           },
@@ -165,6 +178,7 @@ describe("WebhookHandler", () => {
         pull_request: {
           body: "Test PR body",
           labels: [{ name: "enhancement" }],
+          number: 2,
           state: "open",
           title: "Test PR",
           additions: 100,
@@ -173,6 +187,7 @@ describe("WebhookHandler", () => {
         },
         repository: {
           name: "test-repo",
+          full_name: "owner/test-repo",
           description: "Test repository",
         },
       };
@@ -183,6 +198,8 @@ describe("WebhookHandler", () => {
       expect(result.type).toBe("pull_request");
       expect(result.action).toBe("synchronize");
       expect(result.payload.pull_request.title).toBe("Test PR");
+      expect(result.payload.pull_request.number).toBe(2);
+      expect(result.payload.repository.full_name).toBe("owner/test-repo");
       expect(result.userPrompt).toContain("Title: Test PR");
       expect(result.userPrompt).toContain("Description: Test PR body");
     });
@@ -201,6 +218,155 @@ describe("WebhookHandler", () => {
         payload: { issue: undefined, repository: undefined },
         userPrompt: "",
       });
+    });
+  });
+
+  describe("auto-labeling", () => {
+    beforeEach(() => {
+      mockAnalyzeAndSyncPR.mockReset();
+      (webhookHandler as any).ticketAnalyzer.classify = vi
+        .fn()
+        .mockResolvedValue({ text: "Testing", processingTime: 50 });
+      (webhookHandler as any).ticketAnalyzer.parseResponse = vi
+        .fn()
+        .mockReturnValue({ predictedLabel: "Testing", rawText: "Testing", processingTime: 50 });
+    });
+
+    it("should trigger label sync on PR opened event", async () => {
+      mockAnalyzeAndSyncPR.mockResolvedValue({ added: ["type:feature"], removed: [] });
+      vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
+
+      const req = {
+        json: vi.fn().mockResolvedValue({
+          action: "opened",
+          pull_request: {
+            body: "Test PR body",
+            labels: [],
+            number: 1,
+            state: "open",
+            title: "Test PR",
+            additions: 10,
+            changed_files: 2,
+            deletions: 5,
+          },
+          repository: {
+            name: "test-repo",
+            full_name: "owner/test-repo",
+            description: "Test repository",
+          },
+        }),
+        headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
+        text: vi.fn().mockResolvedValue("{}"),
+      } as any;
+
+      const result = await webhookHandler.handle(req);
+      const body: any = await result.json();
+
+      expect(result.status).toBe(200);
+      expect(body.predictedLabel).toBe("Testing");
+      expect(body.syncResult).toEqual({ added: ["type:feature"], removed: [] });
+      expect(mockAnalyzeAndSyncPR).toHaveBeenCalledOnce();
+    });
+
+    it("should trigger label sync on PR synchronize event", async () => {
+      mockAnalyzeAndSyncPR.mockResolvedValue({ added: ["type:bug"], removed: ["enhancement"] });
+      vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
+
+      const req = {
+        json: vi.fn().mockResolvedValue({
+          action: "synchronize",
+          pull_request: {
+            body: "Fix critical bug",
+            labels: [{ name: "enhancement" }],
+            number: 3,
+            state: "open",
+            title: "Bug fix",
+            additions: 20,
+            changed_files: 1,
+            deletions: 5,
+          },
+          repository: {
+            name: "test-repo",
+            full_name: "owner/test-repo",
+            description: "Test repository",
+          },
+        }),
+        headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
+        text: vi.fn().mockResolvedValue("{}"),
+      } as any;
+
+      const result = await webhookHandler.handle(req);
+      const body: any = await result.json();
+
+      expect(result.status).toBe(200);
+      expect(body.syncResult).toEqual({ added: ["type:bug"], removed: ["enhancement"] });
+      expect(mockAnalyzeAndSyncPR).toHaveBeenCalledOnce();
+    });
+
+    it("should not trigger label sync on non-PR events", async () => {
+      vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
+
+      const req = {
+        json: vi.fn().mockResolvedValue({
+          action: "opened",
+          issue: {
+            body: "Test issue body",
+            labels: [],
+            number: 1,
+            state: "open",
+            title: "Test issue",
+          },
+          repository: {
+            name: "test-repo",
+            full_name: "owner/test-repo",
+            description: "Test repository",
+          },
+        }),
+        headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
+        text: vi.fn().mockResolvedValue("{}"),
+      } as any;
+
+      const result = await webhookHandler.handle(req);
+      const body: any = await result.json();
+
+      expect(result.status).toBe(200);
+      expect(body.syncResult).toBeUndefined();
+      expect(mockAnalyzeAndSyncPR).not.toHaveBeenCalled();
+    });
+
+    it("should handle label sync failure gracefully", async () => {
+      mockAnalyzeAndSyncPR.mockRejectedValue(new Error("API error"));
+      vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
+
+      const req = {
+        json: vi.fn().mockResolvedValue({
+          action: "opened",
+          pull_request: {
+            body: "Test",
+            labels: [],
+            number: 1,
+            state: "open",
+            title: "Test PR",
+            additions: 10,
+            changed_files: 2,
+            deletions: 5,
+          },
+          repository: {
+            name: "test-repo",
+            full_name: "owner/test-repo",
+            description: "Test repository",
+          },
+        }),
+        headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
+        text: vi.fn().mockResolvedValue("{}"),
+      } as any;
+
+      const result = await webhookHandler.handle(req);
+      const body: any = await result.json();
+
+      expect(result.status).toBe(200);
+      expect(body.predictedLabel).toBe("Testing");
+      expect(body.syncResult).toBeUndefined();
     });
   });
 });

@@ -5,7 +5,13 @@ import type {
   GitHubPullRequest,
   GitHubRepository,
 } from "./types";
-import type { Issue, PullRequest, Repository, ListOptions } from "../../types/basic";
+import type {
+  Issue,
+  PullRequest,
+  Repository,
+  ListOptions,
+  LabelDefinition,
+} from "../../types/basic";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -185,5 +191,51 @@ export class GitHubAppProvider implements GitHubProvider {
       full_name: data.full_name,
       description: data.description || "",
     };
+  }
+
+  async getLabels(target: string): Promise<string[]> {
+    const [owner, repo, , number] = target.split("/");
+    const data = await this.request<{ name: string }[]>(
+      `/repos/${owner}/${repo}/issues/${number}/labels`,
+    );
+    return data.map((l) => l.name);
+  }
+
+  async getRepositoryLabels(owner: string, repo: string): Promise<LabelDefinition[]> {
+    const data = await this.request<{ name: string; color: string; description: string | null }[]>(
+      `/repos/${owner}/${repo}/labels`,
+    );
+    return data.map((l) => ({
+      name: l.name,
+      color: l.color,
+      description: l.description || undefined,
+    }));
+  }
+
+  async createLabel(owner: string, repo: string, label: LabelDefinition): Promise<void> {
+    await this.request(`/repos/${owner}/${repo}/labels`, {
+      method: "POST",
+      body: JSON.stringify({
+        name: label.name,
+        color: label.color || "ededed",
+        description: label.description || "",
+      }),
+    });
+  }
+
+  async getPRDiff(owner: string, repo: string, number: number): Promise<string> {
+    const token = await this.getInstallationToken();
+    const response = await fetch(`${this.baseUrl}/repos/${owner}/${repo}/pulls/${number}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3.diff",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.text();
   }
 }
