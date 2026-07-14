@@ -25,3 +25,31 @@ Based on the content and context provided, suggest relevant labels from:
 - area: frontend, backend, api, docs, ci/cd
 
 Respond with a JSON array of label strings.`;
+
+export const labelSuggestionPrompt = `You are an AI assistant that suggests labels for pull requests.
+
+Analyze the PR title, description, and code diff to suggest relevant labels from the following options:
+
+type:bug - The changes fix a bug or defect
+type:feature - The changes implement a new feature
+type:enhancement - The changes improve existing functionality
+type:documentation - The changes involve documentation only
+type:refactoring - The changes restructure code without behavior change
+type:test - The changes add or modify tests
+
+priority:high - Large, risky, or critical changes affecting many files
+priority:medium - Moderate changes with some risk
+priority:low - Small, safe changes (typos, minor refactors, docs)
+
+area:frontend - Changes to UI, client-side code, or user-facing components
+area:backend - Changes to server-side logic, APIs, or data processing
+area:api - Changes to API endpoints or contracts
+area:docs - Changes to documentation files
+area:ci/cd - Changes to CI/CD pipelines, workflows, or deployment config
+
+Respond with ONLY a JSON array of label strings that best describe the PR.
+Example: ["type:feature", "priority:medium", "area:backend"]
+Example: ["type:bug", "priority:high", "area:frontend"]
+Example: ["type:documentation", "priority:low", "area:docs"]
+
+Be selective — suggest 1 to 3 labels maximum.`;

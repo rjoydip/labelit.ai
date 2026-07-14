@@ -28,24 +28,44 @@ export interface ClassificationType {
 
 export type PredictedLabel = TicketPredictedLabel | PRPredictedLable;
 
+export interface LabelDefinition {
+  name: string;
+  color?: string;
+  description?: string;
+}
+
+export interface LabelSuggestionResult {
+  suggestedLabels: string[];
+  rawText: string;
+  processingTime: number;
+}
+
+export interface SyncResult {
+  added: string[];
+  removed: string[];
+}
+
 export interface PayloadMeta {
   source?: "github";
   type?: "issue" | "pull_request";
-  action?: "created" | "opened";
+  action?: string;
   payload?: {
     issue?: {
       body: string;
       labels: string[];
+      number: number;
       state: string;
       title: string;
     };
     pull_request?: {
       description: string;
       labels: string[];
+      number: number;
       state: string;
       title: string;
     };
     repository?: {
+      full_name: string;
       name: string;
       description: string;
     };

@@ -1,4 +1,11 @@
-import type { ProviderType, ListOptions, Issue, PullRequest, Repository } from "../../types/basic";
+import type {
+  ProviderType,
+  ListOptions,
+  Issue,
+  PullRequest,
+  Repository,
+  LabelDefinition,
+} from "../../types/basic";
 
 export interface ProviderConfig {
   token?: string;
@@ -15,6 +22,10 @@ export interface GitHubProvider {
   addLabels(target: string, labels: string[]): Promise<void>;
   removeLabels(target: string, labels: string[]): Promise<void>;
   getRepository(options: { owner: string; repo: string }): Promise<Repository>;
+  getLabels(target: string): Promise<string[]>;
+  getRepositoryLabels(owner: string, repo: string): Promise<LabelDefinition[]>;
+  createLabel(owner: string, repo: string, label: LabelDefinition): Promise<void>;
+  getPRDiff(owner: string, repo: string, number: number): Promise<string>;
 }
 
 export interface GitHubIssue {

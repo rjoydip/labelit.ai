@@ -1,6 +1,7 @@
 import type { Env } from "../types/env";
-import type { PayloadMeta } from "../types/basic";
+import type { PayloadMeta, SyncResult } from "../types/basic";
 import { PRAnalyzer, TicketAnalyzer } from "../services";
+import { LabelService } from "../services/label.service";
 import { createErrorResponse, createSuccessResponse } from "../utils";
 import { validateGitHubWebhook } from "./validation";
 import { RateLimiter } from "./rate-limit";
@@ -24,8 +25,10 @@ export class WebhookHandler {
   private ticketAnalyzer: TicketAnalyzer;
   private rateLimiter: RateLimiter;
   private queue: Queue<PayloadMeta>;
+  private env: Env;
 
   constructor(env: Env) {
+    this.env = env;
     this.prAnalyzer = new PRAnalyzer(env);
     this.ticketAnalyzer = new TicketAnalyzer(env);
     this.rateLimiter = new RateLimiter(DEFAULT_CONFIG.rateLimit);
@@ -61,16 +64,16 @@ export class WebhookHandler {
     if (Object.hasOwn(payload, "issue")) {
       const {
         action,
-        issue: { body, labels, state, title },
-        repository: { name, description },
+        issue: { body, labels, number, state, title },
+        repository: { name, full_name, description },
       } = payload;
       return {
         source: "github",
         type: "issue",
         action,
         payload: {
-          issue: { body, labels, state, title },
-          repository: { name, description },
+          issue: { body, labels, number, state, title },
+          repository: { full_name, name, description },
         },
         userPrompt: "",
       };
@@ -79,15 +82,15 @@ export class WebhookHandler {
     if (Object.hasOwn(payload, "pull_request")) {
       const {
         action,
-        pull_request: { body, labels, state, title, additions, changed_files, deletions },
-        repository: { name, description },
+        pull_request: { body, labels, number, state, title, additions, changed_files, deletions },
+        repository: { name, full_name, description },
       } = payload;
-      const diff_content = "";
+      const diffContent = "";
       const calculateDetails = {
         additions: additions || 0,
         changed_files: changed_files || 0,
         deletions: deletions || 0,
-        diff_content,
+        diff_content: diffContent,
         reviewers: [],
       };
       const complexityScore = this.prAnalyzer.calculateComplexity(calculateDetails);
@@ -97,8 +100,8 @@ export class WebhookHandler {
         type: "pull_request",
         action,
         payload: {
-          pull_request: { labels, state, title, description: body },
-          repository: { name, description },
+          pull_request: { description: body, labels, number, state, title },
+          repository: { full_name, name, description },
         },
         userPrompt: `
           Title: ${title}
@@ -107,7 +110,7 @@ export class WebhookHandler {
           - Changed Files: ${changed_files || 0}
           - Additions: ${additions || 0}
           - Deletions: ${deletions || 0}
-          - Diff Content: ${diff_content}
+          - Diff Content: ${diffContent}
           - Complexity Score: ${complexityScore}
           - Risk Score: ${riskScore}
         `,
@@ -142,17 +145,43 @@ export class WebhookHandler {
   public async handle(req: Request) {
     try {
       const reqPayload = await req.json();
-      const { payload, userPrompt }: PayloadMeta = this.preparePayload(reqPayload);
+      const meta: PayloadMeta = this.preparePayload(reqPayload);
 
       const isValid = await this.validateRequest(req);
       if (!isValid) {
         return createErrorResponse("Rate limit exceeded or invalid signature", 429);
       }
 
-      const promptDetails = this.ticketAnalyzer.getPrompt(userPrompt);
-      const classifiedResponse = await this.ticketAnalyzer.classify(promptDetails, payload);
+      const promptDetails = this.ticketAnalyzer.getPrompt(meta.userPrompt);
+      const classifiedResponse = await this.ticketAnalyzer.classify(promptDetails, meta.payload);
       const response = this.ticketAnalyzer.parseResponse(classifiedResponse);
-      return createSuccessResponse(response);
+
+      let syncResult: SyncResult | undefined;
+
+      if (
+        meta.type === "pull_request" &&
+        (meta.action === "opened" || meta.action === "synchronize") &&
+        this.env.GITHUB_PROVIDER &&
+        meta.payload?.pull_request?.number &&
+        meta.payload?.repository?.full_name
+      ) {
+        const [owner, repo] = meta.payload.repository.full_name.split("/");
+        const prNumber = meta.payload.pull_request.number;
+        const title = meta.payload.pull_request.title;
+        const body = meta.payload.pull_request.description || "";
+
+        try {
+          const labelService = new LabelService(this.env.GITHUB_PROVIDER, this.env);
+          syncResult = await labelService.analyzeAndSyncPR(owner, repo, prNumber, title, body);
+        } catch (syncError) {
+          console.error("Label sync failed:", syncError);
+        }
+      }
+
+      return createSuccessResponse({
+        ...response,
+        syncResult,
+      });
     } catch (error) {
       return createErrorResponse(error);
     }
