@@ -7,7 +7,7 @@
       "dependencies": {
         "@earendil-works/pi-agent-core": "^0.75.5",
         "@earendil-works/pi-ai": "^0.75.5",
-        "hono": "^4.12.29",
+        "hono": "^4.12.30",
       },
       "devDependencies": {
         "@hono/node-server": "^2.0.8",
