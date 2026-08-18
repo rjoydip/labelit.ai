@@ -5,6 +5,23 @@ import { labelSuggestionPrompt } from "../../ai/prompts";
 
 const MAX_DIFF_LENGTH = 8000;
 
+const ALLOWED_LABELS = new Set([
+  "type:bug",
+  "type:feature",
+  "type:enhancement",
+  "type:documentation",
+  "type:refactoring",
+  "type:test",
+  "priority:high",
+  "priority:medium",
+  "priority:low",
+  "area:frontend",
+  "area:backend",
+  "area:api",
+  "area:docs",
+  "area:ci/cd",
+]);
+
 export interface LabelSuggestionInput {
   title: string;
   body: string;
@@ -36,17 +53,34 @@ export class LabelSuggestionAnalyzer extends AIProcessor<LabelSuggestionResult> 
     try {
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed)) {
-        return parsed.filter((l): l is string => typeof l === "string" && l.length > 0);
+        return this.normalizeLabels(parsed.filter((l): l is string => typeof l === "string"));
       }
     } catch {}
 
-    const labelPattern = /(type|priority|area|breaking):\w+/g;
+    const labelPattern = /(type|priority|area):[\w/]+/g;
     const matches = text.match(labelPattern);
     if (matches) {
-      return [...new Set(matches)];
+      return this.normalizeLabels(matches);
     }
 
     return this.fallbackKeywordAnalysis(text);
+  }
+
+  /**
+   * Normalize to lowercase, reject anything outside the managed vocabulary,
+   * and dedupe — a deviating model response must never create arbitrary labels.
+   */
+  private normalizeLabels(labels: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const label of labels) {
+      const normalized = label.trim().toLowerCase();
+      if (ALLOWED_LABELS.has(normalized) && !seen.has(normalized)) {
+        seen.add(normalized);
+        result.push(normalized);
+      }
+    }
+    return result;
   }
 
   private fallbackKeywordAnalysis(text: string): string[] {

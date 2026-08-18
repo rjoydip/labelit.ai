@@ -49,6 +49,42 @@ describe("LabelSuggestionAnalyzer", () => {
 
       expect(result.suggestedLabels).toEqual(["type:bug", "priority:high"]);
     });
+
+    it("should reject labels outside the managed vocabulary", () => {
+      const result = analyzer.parseResponse({
+        text: JSON.stringify(["bug", "needs-review", "type:bug"]),
+        processingTime: 20,
+      });
+
+      expect(result.suggestedLabels).toEqual(["type:bug"]);
+    });
+
+    it("should return an empty array when nothing matches the vocabulary", () => {
+      const result = analyzer.parseResponse({
+        text: JSON.stringify(["bug", "good first issue"]),
+        processingTime: 20,
+      });
+
+      expect(result.suggestedLabels).toEqual([]);
+    });
+
+    it("should normalize case and dedupe labels", () => {
+      const result = analyzer.parseResponse({
+        text: JSON.stringify(["Type:Bug", "TYPE:BUG", "type:bug"]),
+        processingTime: 20,
+      });
+
+      expect(result.suggestedLabels).toEqual(["type:bug"]);
+    });
+
+    it("should not extract unknown prefixes from natural language", () => {
+      const result = analyzer.parseResponse({
+        text: "labels: type:bug, breaking:change, priority:high",
+        processingTime: 20,
+      });
+
+      expect(result.suggestedLabels).toEqual(["type:bug", "priority:high"]);
+    });
   });
 
   describe("fallbackKeywordAnalysis", () => {

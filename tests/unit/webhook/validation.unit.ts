@@ -43,7 +43,7 @@ describe("validateGitHubWebhook", () => {
           valid: false,
           error: "Invalid signature",
         });
-        expect(verifyHMAC).toHaveBeenCalledWith(testPayload, testSecret, testSignature);
+        expect(verifyHMAC).toHaveBeenCalledWith(testPayload, testSecret, "abc123");
       });
     });
 
@@ -60,7 +60,7 @@ describe("validateGitHubWebhook", () => {
         expect(result).toEqual({
           valid: true,
         });
-        expect(verifyHMAC).toHaveBeenCalledWith(testPayload, testSecret, testSignature);
+        expect(verifyHMAC).toHaveBeenCalledWith(testPayload, testSecret, "abc123");
       });
     });
   });
@@ -104,7 +104,11 @@ describe("validateGitHubWebhook", () => {
         );
 
         expect(result.valid).toBe(true);
-        expect(verifyHMAC).toHaveBeenCalledWith(testPayload, testSecret, signature);
+        expect(verifyHMAC).toHaveBeenCalledWith(
+          testPayload,
+          testSecret,
+          signature.replace(/^sha(?:256|1)=/i, ""),
+        );
       }
     });
   });

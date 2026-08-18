@@ -236,27 +236,28 @@ describe("WebhookHandler", () => {
       mockAnalyzeAndSyncPR.mockResolvedValue({ added: ["type:feature"], removed: [] });
       vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
 
+      const payload = {
+        action: "opened",
+        pull_request: {
+          body: "Test PR body",
+          labels: [],
+          number: 1,
+          state: "open",
+          title: "Test PR",
+          additions: 10,
+          changed_files: 2,
+          deletions: 5,
+        },
+        repository: {
+          name: "test-repo",
+          full_name: "owner/test-repo",
+          description: "Test repository",
+        },
+      };
       const req = {
-        json: vi.fn().mockResolvedValue({
-          action: "opened",
-          pull_request: {
-            body: "Test PR body",
-            labels: [],
-            number: 1,
-            state: "open",
-            title: "Test PR",
-            additions: 10,
-            changed_files: 2,
-            deletions: 5,
-          },
-          repository: {
-            name: "test-repo",
-            full_name: "owner/test-repo",
-            description: "Test repository",
-          },
-        }),
+        json: vi.fn().mockResolvedValue(payload),
         headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
-        text: vi.fn().mockResolvedValue("{}"),
+        text: vi.fn().mockResolvedValue(JSON.stringify(payload)),
       } as any;
 
       const result = await webhookHandler.handle(req);
@@ -272,27 +273,28 @@ describe("WebhookHandler", () => {
       mockAnalyzeAndSyncPR.mockResolvedValue({ added: ["type:bug"], removed: ["enhancement"] });
       vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
 
+      const payload = {
+        action: "synchronize",
+        pull_request: {
+          body: "Fix critical bug",
+          labels: [{ name: "enhancement" }],
+          number: 3,
+          state: "open",
+          title: "Bug fix",
+          additions: 20,
+          changed_files: 1,
+          deletions: 5,
+        },
+        repository: {
+          name: "test-repo",
+          full_name: "owner/test-repo",
+          description: "Test repository",
+        },
+      };
       const req = {
-        json: vi.fn().mockResolvedValue({
-          action: "synchronize",
-          pull_request: {
-            body: "Fix critical bug",
-            labels: [{ name: "enhancement" }],
-            number: 3,
-            state: "open",
-            title: "Bug fix",
-            additions: 20,
-            changed_files: 1,
-            deletions: 5,
-          },
-          repository: {
-            name: "test-repo",
-            full_name: "owner/test-repo",
-            description: "Test repository",
-          },
-        }),
+        json: vi.fn().mockResolvedValue(payload),
         headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
-        text: vi.fn().mockResolvedValue("{}"),
+        text: vi.fn().mockResolvedValue(JSON.stringify(payload)),
       } as any;
 
       const result = await webhookHandler.handle(req);
@@ -306,24 +308,25 @@ describe("WebhookHandler", () => {
     it("should not trigger label sync on non-PR events", async () => {
       vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
 
+      const payload = {
+        action: "opened",
+        issue: {
+          body: "Test issue body",
+          labels: [],
+          number: 1,
+          state: "open",
+          title: "Test issue",
+        },
+        repository: {
+          name: "test-repo",
+          full_name: "owner/test-repo",
+          description: "Test repository",
+        },
+      };
       const req = {
-        json: vi.fn().mockResolvedValue({
-          action: "opened",
-          issue: {
-            body: "Test issue body",
-            labels: [],
-            number: 1,
-            state: "open",
-            title: "Test issue",
-          },
-          repository: {
-            name: "test-repo",
-            full_name: "owner/test-repo",
-            description: "Test repository",
-          },
-        }),
+        json: vi.fn().mockResolvedValue(payload),
         headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
-        text: vi.fn().mockResolvedValue("{}"),
+        text: vi.fn().mockResolvedValue(JSON.stringify(payload)),
       } as any;
 
       const result = await webhookHandler.handle(req);
@@ -338,27 +341,28 @@ describe("WebhookHandler", () => {
       mockAnalyzeAndSyncPR.mockRejectedValue(new Error("API error"));
       vi.spyOn(webhookHandler as any, "validateRequest").mockResolvedValue(true);
 
+      const payload = {
+        action: "opened",
+        pull_request: {
+          body: "Test",
+          labels: [],
+          number: 1,
+          state: "open",
+          title: "Test PR",
+          additions: 10,
+          changed_files: 2,
+          deletions: 5,
+        },
+        repository: {
+          name: "test-repo",
+          full_name: "owner/test-repo",
+          description: "Test repository",
+        },
+      };
       const req = {
-        json: vi.fn().mockResolvedValue({
-          action: "opened",
-          pull_request: {
-            body: "Test",
-            labels: [],
-            number: 1,
-            state: "open",
-            title: "Test PR",
-            additions: 10,
-            changed_files: 2,
-            deletions: 5,
-          },
-          repository: {
-            name: "test-repo",
-            full_name: "owner/test-repo",
-            description: "Test repository",
-          },
-        }),
+        json: vi.fn().mockResolvedValue(payload),
         headers: { get: vi.fn().mockReturnValue("127.0.0.1") },
-        text: vi.fn().mockResolvedValue("{}"),
+        text: vi.fn().mockResolvedValue(JSON.stringify(payload)),
       } as any;
 
       const result = await webhookHandler.handle(req);

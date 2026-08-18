@@ -139,14 +139,34 @@ describe("LabelService", () => {
       expect(toRemove).toEqual([]);
     });
 
-    it("should remove all labels when suggested is empty", () => {
+    it("should not remove any labels when suggested is empty", () => {
       const { toAdd, toRemove } = (service as any).computeLabelDiff(
         ["type:bug", "priority:high"],
         [],
       );
 
       expect(toAdd).toEqual([]);
-      expect(toRemove).toEqual(["type:bug", "priority:high"]);
+      expect(toRemove).toEqual([]);
+    });
+
+    it("should never remove human-added labels", () => {
+      const { toAdd, toRemove } = (service as any).computeLabelDiff(
+        ["type:bug", "needs review", "good first issue"],
+        ["type:feature"],
+      );
+
+      expect(toAdd).toEqual(["type:feature"]);
+      expect(toRemove).toEqual(["type:bug"]);
+    });
+
+    it("should leave labels untouched when a human label is the only current one", () => {
+      const { toAdd, toRemove } = (service as any).computeLabelDiff(
+        ["needs review"],
+        ["type:feature"],
+      );
+
+      expect(toAdd).toEqual(["type:feature"]);
+      expect(toRemove).toEqual([]);
     });
   });
 
