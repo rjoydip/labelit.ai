@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import type { Env } from "./types/env";
+import { createGitHubProviderFromEnv } from "./providers/github";
 import { WebhookHandler } from "./webhook/handler";
 
 const app = new Hono<{ Bindings: Env }>();
 
 app.post("/webhook/events", async (c) => {
-  const handler = new WebhookHandler(c.env);
+  const handler = new WebhookHandler(c.env, createGitHubProviderFromEnv(c.env));
   return handler.handle(c.req.raw);
 });
 
@@ -25,7 +26,7 @@ app.post("/api/labels/add", async (c) => {
     return c.json({ error: "Missing target or labels" }, 400);
   }
 
-  const provider = c.env.GITHUB_PROVIDER;
+  const provider = createGitHubProviderFromEnv(c.env);
   if (!provider) {
     return c.json({ error: "Provider not configured" }, 500);
   }
@@ -46,7 +47,7 @@ app.post("/api/labels/remove", async (c) => {
     return c.json({ error: "Missing target or labels" }, 400);
   }
 
-  const provider = c.env.GITHUB_PROVIDER;
+  const provider = createGitHubProviderFromEnv(c.env);
   if (!provider) {
     return c.json({ error: "Provider not configured" }, 500);
   }

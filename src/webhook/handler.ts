@@ -1,4 +1,4 @@
-import type { Env } from "../types/env";
+import type { Env, GitHubProvider } from "../types/env";
 import type { PayloadMeta, SyncResult } from "../types/basic";
 import { PRAnalyzer, TicketAnalyzer } from "../services";
 import { LabelService } from "../services/label.service";
@@ -26,9 +26,11 @@ export class WebhookHandler {
   private rateLimiter: RateLimiter;
   private queue: Queue<PayloadMeta>;
   private env: Env;
+  private githubProvider?: GitHubProvider;
 
-  constructor(env: Env) {
+  constructor(env: Env, provider?: GitHubProvider) {
     this.env = env;
+    this.githubProvider = provider ?? env.GITHUB_PROVIDER;
     this.prAnalyzer = new PRAnalyzer(env);
     this.ticketAnalyzer = new TicketAnalyzer(env);
     this.rateLimiter = new RateLimiter(DEFAULT_CONFIG.rateLimit);
@@ -125,7 +127,7 @@ export class WebhookHandler {
     };
   }
 
-  private async validateRequest(req: Request): Promise<boolean> {
+  private async validateRequest(req: Request, payload: string): Promise<boolean> {
     const clientId = req.headers.get("x-forwarded-for") || "unknown";
     const allowed = await this.rateLimiter.isAllowed(clientId);
     if (!allowed) {
@@ -133,21 +135,17 @@ export class WebhookHandler {
     }
 
     const signature = req.headers.get("x-hub-signature-256") ?? null;
-    const payload = await req.text();
-    const result = await validateGitHubWebhook(
-      payload,
-      signature,
-      process.env.WEBHOOK_SECRET || "",
-    );
+    const result = await validateGitHubWebhook(payload, signature, this.env.WEBHOOK_SECRET || "");
     return result.valid;
   }
 
   public async handle(req: Request) {
     try {
-      const reqPayload = await req.json();
+      const rawBody = await req.text();
+      const reqPayload = JSON.parse(rawBody);
       const meta: PayloadMeta = this.preparePayload(reqPayload);
 
-      const isValid = await this.validateRequest(req);
+      const isValid = await this.validateRequest(req, rawBody);
       if (!isValid) {
         return createErrorResponse("Rate limit exceeded or invalid signature", 429);
       }
@@ -161,7 +159,7 @@ export class WebhookHandler {
       if (
         meta.type === "pull_request" &&
         (meta.action === "opened" || meta.action === "synchronize") &&
-        this.env.GITHUB_PROVIDER &&
+        this.githubProvider &&
         meta.payload?.pull_request?.number &&
         meta.payload?.repository?.full_name
       ) {
@@ -171,7 +169,7 @@ export class WebhookHandler {
         const body = meta.payload.pull_request.description || "";
 
         try {
-          const labelService = new LabelService(this.env.GITHUB_PROVIDER, this.env);
+          const labelService = new LabelService(this.githubProvider, this.env);
           syncResult = await labelService.analyzeAndSyncPR(owner, repo, prNumber, title, body);
         } catch (syncError) {
           console.error("Label sync failed:", syncError);

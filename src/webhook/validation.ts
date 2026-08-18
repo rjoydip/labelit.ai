@@ -14,7 +14,9 @@ export async function validateGitHubWebhook(
     return { valid: false, error: "Missing signature" };
   }
 
-  const isValid = await verifyHMAC(payload, secret, signature);
+  // GitHub sends x-hub-signature-256 as "sha256=<hex>"; verifyHMAC compares against bare hex.
+  const normalizedSignature = signature.replace(/^sha(?:256|1)=/i, "");
+  const isValid = await verifyHMAC(payload, secret, normalizedSignature);
   if (!isValid) {
     return { valid: false, error: "Invalid signature" };
   }

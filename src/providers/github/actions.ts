@@ -86,7 +86,7 @@ export class GitHubActionsProvider implements GitHubProvider {
   }
 
   async addLabels(target: string, labels: string[]): Promise<void> {
-    const [owner, repo, , number] = target.split("/");
+    const [owner, repo, number] = target.split(/[/#]/);
     await this.request(`/repos/${owner}/${repo}/issues/${number}/labels`, {
       method: "POST",
       body: JSON.stringify({ labels }),
@@ -94,14 +94,22 @@ export class GitHubActionsProvider implements GitHubProvider {
   }
 
   async removeLabels(target: string, labels: string[]): Promise<void> {
-    const [owner, repo, , number] = target.split("/");
+    const [owner, repo, number] = target.split(/[/#]/);
     for (const label of labels) {
-      await this.request(
-        `/repos/${owner}/${repo}/issues/${number}/labels/${encodeURIComponent(label)}`,
-        {
-          method: "DELETE",
-        },
-      );
+      try {
+        await this.request(
+          `/repos/${owner}/${repo}/issues/${number}/labels/${encodeURIComponent(label)}`,
+          {
+            method: "DELETE",
+          },
+        );
+      } catch (err) {
+        // The label may already have been removed by a concurrent event.
+        if ((err as { message?: string })?.message?.includes("404")) {
+          continue;
+        }
+        throw err;
+      }
     }
   }
 
@@ -115,7 +123,7 @@ export class GitHubActionsProvider implements GitHubProvider {
   }
 
   async getLabels(target: string): Promise<string[]> {
-    const [owner, repo, , number] = target.split("/");
+    const [owner, repo, number] = target.split(/[/#]/);
     const data = await this.request<{ name: string }[]>(
       `/repos/${owner}/${repo}/issues/${number}/labels`,
     );
@@ -123,10 +131,19 @@ export class GitHubActionsProvider implements GitHubProvider {
   }
 
   async getRepositoryLabels(owner: string, repo: string): Promise<LabelDefinition[]> {
-    const data = await this.request<{ name: string; color: string; description: string | null }[]>(
-      `/repos/${owner}/${repo}/labels`,
-    );
-    return data.map((l) => ({
+    const labels: { name: string; color: string; description: string | null }[] = [];
+    let page = 1;
+    while (true) {
+      const data = await this.request<
+        { name: string; color: string; description: string | null }[]
+      >(`/repos/${owner}/${repo}/labels?per_page=100&page=${page}`);
+      labels.push(...data);
+      if (data.length < 100 || page >= 50) {
+        break;
+      }
+      page += 1;
+    }
+    return labels.map((l) => ({
       name: l.name,
       color: l.color,
       description: l.description || undefined,

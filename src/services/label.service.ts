@@ -3,6 +3,8 @@ import type { GitHubProvider } from "../providers/github/types";
 import type { SyncResult } from "../types/basic";
 import { LabelSuggestionAnalyzer } from "./analyzer/label-suggestion";
 
+const MANAGED_LABEL_PATTERN = /^(type|priority|area):/;
+
 export class LabelService {
   private provider: GitHubProvider;
   private labelAnalyzer: LabelSuggestionAnalyzer;
@@ -50,7 +52,15 @@ export class LabelService {
     const suggestedSet = new Set(suggested);
 
     const toAdd = suggested.filter((l) => !currentSet.has(l));
-    const toRemove = current.filter((l) => !suggestedSet.has(l));
+
+    // Only auto-managed labels are eligible for removal, so human-added
+    // labels (e.g. "needs review", "good first issue") are never stripped.
+    // An empty suggestion means the analyzer could not classify the PR, so
+    // leave existing labels untouched instead of wiping them.
+    const toRemove =
+      suggested.length === 0
+        ? []
+        : current.filter((l) => MANAGED_LABEL_PATTERN.test(l) && !suggestedSet.has(l));
 
     return { toAdd, toRemove };
   }
